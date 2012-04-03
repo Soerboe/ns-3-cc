@@ -225,20 +225,23 @@ CacheCastNetDevice::TransmitStart (Ptr<Packet> p)
   NS_ASSERT_MSG (m_txMachineState == READY, "Must be READY to transmit");
 
   /* If packet is a CacheCast packet we handle it */
-//   CacheCastTag ccTag;
-//   if (p->PeekPacketTag (ccTag))
-//   {
-// 
-// 
-//     bool ret = m_senderElement->HandlePacket (p);
-// 
-//     if (!ret) {
-//       //DO SOMETHING
-//       ;
-//     }
-// 
-// 
-//   }
+  CacheCastTag ccTag;
+  if (p->PeekPacketTag (ccTag))
+  {
+    PppHeader ppp;
+    p->RemoveHeader (ppp);
+
+    bool ret = m_senderElement->HandlePacket (p);
+
+    p->AddHeader (ppp);
+
+    if (!ret) {
+      //DO SOMETHING
+      ;
+    }
+
+
+  }
 
   m_txMachineState = BUSY;
   m_currentPkt = p;
