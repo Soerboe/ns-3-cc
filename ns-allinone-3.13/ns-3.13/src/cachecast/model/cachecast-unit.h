@@ -1,6 +1,6 @@
 /* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil; -*- */
-#ifndef __CACHECAST_ELEMENT_H__
-#define __CACHECAST_ELEMENT_H__
+#ifndef __CACHECAST_UNIT_H__
+#define __CACHECAST_UNIT_H__
 
 #include "ns3/object.h"
 #include "ns3/packet.h"
@@ -13,7 +13,7 @@ namespace ns3 {
  * Classes cen be derived from this class in order
  * to implement e.g. CSU and CMU.
  */
-class CacheCastElement : public Object
+class CacheCastUnit : public Object
 {
 public:
    /**
@@ -35,4 +35,4 @@ public:
 
 } // namespace ns3
 
-#endif /* __CACHECAST_ELEMENT_H__ */
+#endif /* __CACHECAST_UNIT_H__ */

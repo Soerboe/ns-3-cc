@@ -9,7 +9,6 @@
 
 namespace ns3 {
 
-/* ... */
 class CacheCast : public Object
 {
     std::vector <Ptr <Socket> > m_sockets; 

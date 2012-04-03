@@ -29,7 +29,7 @@ TypeId
 CacheStoreUnit::GetTypeId (void)
 {
   static TypeId tid = TypeId ("ns3::CacheStoreUnit")
-    .SetParent<CacheCastElement> ()
+    .SetParent<CacheCastUnit> ()
     .AddConstructor<CacheStoreUnit> ()
   ;
   return tid;

@@ -5,8 +5,6 @@
 #include "ns3/abort.h"
 #include "ns3/log.h"
 #include "ns3/simulator.h"
-#include "ns3/cachecast-net-device.h"
-#include "ns3/cachecast-channel.h"
 // #include "ns3/point-to-point-remote-channel.h"
 #include "ns3/queue.h"
 #include "ns3/config.h"
@@ -17,6 +15,9 @@
 #include "ns3/trace-helper.h"
 
 #include "ns3/cachecast-pid.h"
+#include "ns3/cachecast-net-device.h"
+#include "ns3/cachecast-channel.h"
+#include "ns3/cachecast-server-unit.h"
 
 NS_LOG_COMPONENT_DEFINE ("CacheCastServerHelper");
 
@@ -27,7 +28,6 @@ CacheCastServerHelper::CacheCastServerHelper ()
   //TODO change to CacheCastNetDevice
   m_deviceFactory.SetTypeId ("ns3::CacheCastNetDevice");
   m_queueFactory.SetTypeId ("ns3::DropTailQueue");
-  m_serverDeviceFactory.SetTypeId ("ns3::CacheCastServerNetDevice");
   m_channelFactory.SetTypeId ("ns3::CacheCastChannel");
 //   m_remoteChannelFactory.SetTypeId ("ns3::PointToPointRemoteChannel");
 }
@@ -50,7 +50,6 @@ void
 CacheCastServerHelper::SetDeviceAttribute (std::string n1, const AttributeValue &v1)
 {
   // TODO enable and check inheritance of attributes
-//   m_serverDeviceFactory.Set (n1, v1);
   m_deviceFactory.Set (n1, v1);
 }
 
@@ -219,14 +218,16 @@ CacheCastServerHelper::Install (Ptr<Node> server, Ptr<Node> node)
   NetDeviceContainer container;
 
   /* Setup server */
-  Ptr<CacheCastServerNetDevice> serverDevice = m_serverDeviceFactory.Create<CacheCastServerNetDevice> ();
+  Ptr<CacheCastNetDevice> serverDevice = m_deviceFactory.Create<CacheCastNetDevice> ();
+  Ptr<CacheCastServerUnit> serverUnit = Create<CacheCastServerUnit> ();
+  serverDevice->AddSenderUnit (serverUnit);
   Ptr<Queue> serverQueue = m_queueFactory.Create<Queue> ();
   serverDevice->SetAddress (Mac48Address::Allocate ());
   serverDevice->SetQueue (serverQueue);
   server->AddDevice (serverDevice);
 
   /* Setup node */
-  //TODO change to CacheCastNetDevice
+  //TODO add a CSU
   Ptr<CacheCastNetDevice> nodeDevice = m_deviceFactory.Create<CacheCastNetDevice> ();
   Ptr<Queue> nodeQueue = m_queueFactory.Create<Queue> ();
   nodeDevice->SetAddress (Mac48Address::Allocate ());

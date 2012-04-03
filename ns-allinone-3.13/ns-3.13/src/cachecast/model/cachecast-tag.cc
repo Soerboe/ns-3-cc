@@ -6,50 +6,42 @@ namespace ns3 {
 
 NS_OBJECT_ENSURE_REGISTERED (CacheCastTag);
 
-CacheCastTag::CacheCastTag (int32_t socketIndex, int32_t payloadSize, bool lastPacket)
+CacheCastTag::CacheCastTag (uint32_t payloadId, uint32_t payloadSize)
   : Tag (),
-    m_socketIndex (socketIndex),
-    m_payloadSize (payloadSize),
-    m_lastPacket (lastPacket)
+    m_payloadId (payloadId),
+    m_payloadSize (payloadSize)
 {
 }
 
 CacheCastTag::CacheCastTag ()
   : Tag (),
-    m_socketIndex (-1),
-    m_payloadSize (-1),
-    m_lastPacket (false)
+    m_payloadId (-1),
+    m_payloadSize (-1)
 {
 }
 
-bool
-CacheCastTag::IsLastPacket ()
-{
-  return m_lastPacket;
-}
-
-int32_t
-CacheCastTag::GetPayloadSize ()
+uint32_t
+CacheCastTag::GetPayloadSize () const
 {
   return m_payloadSize;
 }
 
 void
-CacheCastTag::SetPayloadSize (int32_t payloadSize)
+CacheCastTag::SetPayloadSize (uint32_t payloadSize)
 {
   m_payloadSize = payloadSize;
 }
 
-int32_t
-CacheCastTag::GetSocketIndex ()
+uint32_t
+CacheCastTag::GetPayloadId () const
 {
-  return m_socketIndex;
+  return m_payloadId;
 }
 
 void
-CacheCastTag::SetSocketIndex (int32_t socketIndex)
+CacheCastTag::SetPayloadId (uint32_t payloadId)
 {
-  m_socketIndex = socketIndex;
+  m_payloadId = payloadId;
 }
 
 TypeId 
@@ -71,30 +63,27 @@ CacheCastTag::GetInstanceTypeId (void) const
 uint32_t 
 CacheCastTag::GetSerializedSize (void) const
 {
-  return sizeof (uint8_t) + sizeof (int32_t) * 2;
+  return sizeof (uint32_t) * 2;
 }
 
 void 
 CacheCastTag::Serialize (TagBuffer buf) const
 {
-  buf.WriteU32 (m_socketIndex);
+  buf.WriteU32 (m_payloadId);
   buf.WriteU32 (m_payloadSize);
-  buf.WriteU8 (m_lastPacket ? 1 : 0);
 }
 
 void 
 CacheCastTag::Deserialize (TagBuffer buf)
 {
-  m_socketIndex = (int32_t) buf.ReadU32 ();
-  m_payloadSize = (int32_t) buf.ReadU32 ();
-  m_lastPacket = buf.ReadU8 () ? true : false;
+  m_payloadId = buf.ReadU32 ();
+  m_payloadSize = buf.ReadU32 ();
 }
 
 void 
 CacheCastTag::Print (std::ostream &os) const
 {
-  os << "CacheCastTag: LastPacket=" << m_lastPacket << " "
-     << "Socket index=" << m_socketIndex << " "
+  os << "CacheCastTag: Socket index=" << m_payloadId << " "
      << "Payload size=" << m_payloadSize;
 }
 

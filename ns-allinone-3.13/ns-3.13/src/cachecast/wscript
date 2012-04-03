@@ -12,13 +12,13 @@ def build(bld):
         'model/cachecast.cc',
         'model/cachecast-tag.cc',
         'model/cachecast-pid.cc',
+        'model/cachecast-unit.cc',
         'model/cache-store-unit.cc',
         'model/cachecast-header.cc',
-        'model/cachecast-element.cc',
         'model/cachecast-channel.cc',
         'model/cachecast-net-device.cc',
+        'model/cachecast-server-unit.cc',
         'model/cachecast-test-application.cc',
-        'model/cachecast-server-net-device.cc',
         'helper/cachecast-server-helper.cc',
         ]
 
@@ -34,13 +34,13 @@ def build(bld):
         'model/cachecast.h',
         'model/cachecast-tag.h',
         'model/cachecast-pid.h',
+        'model/cachecast-unit.h',
         'model/cache-store-unit.h',
         'model/cachecast-header.h',
-        'model/cachecast-element.h',
         'model/cachecast-channel.h',
         'model/cachecast-net-device.h',
+        'model/cachecast-server-unit.h',
         'model/cachecast-test-application.h',
-        'model/cachecast-server-net-device.h',
         'helper/cachecast-server-helper.h',
         ]
 

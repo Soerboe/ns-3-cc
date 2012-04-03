@@ -26,7 +26,7 @@ int
 main (int argc, char *argv[])
 {
   LogComponentEnable ("CacheCastTestApplication", LOG_LEVEL_ALL);
-  LogComponentEnable ("CacheCastServerNetDevice", LOG_LEVEL_ALL);
+  LogComponentEnable ("CacheCastServerUnit", LOG_LEVEL_ALL);
   LogComponentEnable ("CacheCastPid", LOG_LEVEL_ALL);
   LogComponentEnable ("UdpEchoServerApplication", LOG_LEVEL_INFO);
 
@@ -59,15 +59,15 @@ main (int argc, char *argv[])
   /* Set up channel n0 <-> n1 */
   CacheCastServerHelper ccHelper;
 //   pointToPoint.SetDeviceAttribute ("DataRate", StringValue ("5Mbps"));
-  ccHelper.SetDeviceAttribute ("DataRate", StringValue ("10Kbps"));
-  ccHelper.SetChannelAttribute ("Delay", StringValue ("100ms"));
+  ccHelper.SetDeviceAttribute ("DataRate", StringValue ("10Mbps"));
+  ccHelper.SetChannelAttribute ("Delay", StringValue ("10ms"));
 
   NetDeviceContainer devices1 = ccHelper.Install (nodes.Get(0), nodes.Get(1));
 //   ccDevice.SetAttribute ("Mtu", UintegerValue (512));
 
   /* Set up channel n0 <-> n2 */
-  ccHelper.SetDeviceAttribute ("DataRate", StringValue ("10Kbps"));
-  ccHelper.SetChannelAttribute ("Delay", StringValue ("100ms"));
+  ccHelper.SetDeviceAttribute ("DataRate", StringValue ("10Mbps"));
+  ccHelper.SetChannelAttribute ("Delay", StringValue ("10ms"));
 
   NetDeviceContainer devices2 = ccHelper.Install (nodes.Get(0), nodes.Get(2));
 

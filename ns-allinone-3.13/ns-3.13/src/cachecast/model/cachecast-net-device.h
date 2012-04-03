@@ -38,7 +38,7 @@
 #include "ns3/ptr.h"
 #include "ns3/mac48-address.h"
 
-#include "cachecast-element.h"
+#include "cachecast-unit.h"
 
 namespace ns3 {
 
@@ -150,6 +150,24 @@ public:
    */
   void Receive (Ptr<Packet> p);
 
+  /* --------------- CACHECAST RELATED ------------------- */
+
+  /**
+   * \brief Add a new sender unit to this CacheCastNetDevice.
+   *
+   * This unit modifies the packet before it is send onto the channel.
+   */
+  void AddSenderUnit (Ptr<CacheCastUnit> unit) {m_senderUnit = unit;}
+
+ /**
+   * \brief Add a new receiver unit to this CacheCastNetDevice.
+   *
+   * This unit modifies the packet when it is received from the channel.
+   */
+  void AddReceiverUnit (Ptr<CacheCastUnit> unit) {m_receiverUnit = unit;}
+
+  /* ----------------------------------------------------- */
+
   // The remaining methods are documented in ns3::NetDevice*
 
   virtual void SetIfIndex (const uint32_t index);
@@ -209,12 +227,12 @@ private:
    * This element modifies the packet right before it is
    * transmitted onto the channel
    */
-  Ptr<CacheCastElement> m_senderElement;
+  Ptr<CacheCastUnit> m_senderUnit;
 
   /**
    * This element modifies the packet right after it has
    * been received from the channel */
-  Ptr<CacheCastElement> m_receiverElement;
+  Ptr<CacheCastUnit> m_receiverUnit;
 
   // TODO add relevant trace sources
 

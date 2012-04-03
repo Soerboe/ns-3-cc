@@ -2,10 +2,6 @@
 #ifndef __CACHECAST_PID_H__
 #define __CACHECAST_PID_H__
 
-// #include "ns3/point-to-point-net-device.h"
-// #include "ns3/queue.h"
-// #include "ns3/callback.h"
-// #include <vector>
 #include "ns3/object.h"
 
 namespace ns3 {

@@ -11,49 +11,41 @@ class CacheCastTag : public Tag
 {
 public:
   /**
-   * \brief Creates a new empty (invalid) CacheCastTag
+   * \brief Creates a new empty CacheCastTag
    * 
-   * Payload size and socketIndex must be set explicitly before tag is added to a packet
+   * Payload ID and size must be set explicitly before tag is added to a packet
    * */
   CacheCastTag ();
 
   /** 
    * \brief Creates a new CacheCastTag and sets all necessary members
    *
-   * \param socketIndex index of the socket in one Msend() iteration.
-   *                    Used to report errors from CacheCastServerNetDevice to Msend()
+   * \param payloadId the payload ID of the packet
    * \param payloadSize size of the payload the packet carries
-   * \param lastPacket  notifies the CacheCastServerNetDevice that this packet is the 
-   *                    last one so that all CacheCast packets can be sent
    */
-  CacheCastTag (int32_t socketIndex, int32_t payloadSize, bool lastPacket = false);
-
-  /**
-   * \returns true if this packet is the last in a Msend() iteration
-   */
-  bool IsLastPacket ();
+  CacheCastTag (uint32_t payloadId, uint32_t payloadSize);
 
   /**
    * \returns the size of the payload
    */
-  int32_t GetPayloadSize ();
+  uint32_t GetPayloadSize () const;
 
   /**
    * \brief Set the payload size
    * \param payloadSize the new payload size
    */
-  void SetPayloadSize (int32_t payloadSize);
+  void SetPayloadSize (uint32_t payloadSize);
 
   /**
-   * \returns the socketIndex
+   * \returns the payloadID
    */
-  int32_t GetSocketIndex ();
+  uint32_t GetPayloadId () const;
 
   /**
-   * \brief Set the socket index
-   * \param socketIndex the new socket index
+   * \brief Set the payload ID
+   * \param payloadId the payload ID to set
    */
-  void SetSocketIndex (int32_t socketIndex);
+  void SetPayloadId (uint32_t payloadId);
 
   static TypeId GetTypeId (void);
   virtual TypeId GetInstanceTypeId (void) const;
@@ -64,17 +56,13 @@ public:
 
 private:
   /**
-   * \brief Index of a socket into the collection of sockets used by Msend()
+   * \brief The payload ID of the packet this tag is added to
    */
-  int32_t m_socketIndex;
+  uint32_t m_payloadId;
   /**
    * \brief Size of the payload of the packet
    */
-  int32_t m_payloadSize;
-  /**
-   * \brief true if this tag belongs to the last packet in a Msend() iteration
-   */
-  bool m_lastPacket;
+  uint32_t m_payloadSize;
 };
 
 } // namespace ns3

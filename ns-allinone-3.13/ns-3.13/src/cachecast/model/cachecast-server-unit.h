@@ -2,10 +2,7 @@
 #ifndef __CACHECAST_SERVER_UNIT_H__
 #define __CACHECAST_SERVER_UNIT_H__
 
-#include "cachecast-element.h"
-// #include "ns3/queue.h"
-// #include "ns3/callback.h"
-// #include <vector>
+#include "cachecast-unit.h"
 
 namespace ns3 {
 
@@ -14,13 +11,13 @@ namespace ns3 {
  *
  * Handles the sending of packets from the server
  */
-class CacheCastServerUnit : public CacheCastElement
+class CacheCastServerUnit : public CacheCastUnit
 {
 public:
   /**
-   * /brief Construct an empty CacheCastServerNetDevice
+   * /brief Construct an empty CacheCastServerUnit
    */
-  CacheCastServerNetDevice ();
+  CacheCastServerUnit ();
 
   static TypeId GetTypeId (void);
 
@@ -28,7 +25,21 @@ public:
 
 
 private:
-  int32_t m_cache; 
+  struct Cache
+  {
+    uint32_t payloadId;
+    double timeStamp;
+    bool invalid;
+
+    Cache (uint32_t _payloadId, double _timeStamp, bool _invalid)
+    {
+      payloadId = _payloadId;
+      timeStamp = _timeStamp;
+      invalid = _invalid;
+    }
+  };
+
+  Cache m_cache; 
 };
 
 } // namespace ns3

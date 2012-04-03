@@ -154,6 +154,8 @@ CacheCastNetDevice::GetTypeId (void)
 
 CacheCastNetDevice::CacheCastNetDevice () 
   :
+    m_senderUnit (0),
+    m_receiverUnit (0),
     m_txMachineState (READY),
     m_channel (0),
     m_linkUp (false),
@@ -224,23 +226,25 @@ CacheCastNetDevice::TransmitStart (Ptr<Packet> p)
   //
   NS_ASSERT_MSG (m_txMachineState == READY, "Must be READY to transmit");
 
-  /* If packet is a CacheCast packet we handle it */
-  CacheCastTag ccTag;
-  if (p->PeekPacketTag (ccTag))
+  if (m_senderUnit != 0)
   {
-    PppHeader ppp;
-    p->RemoveHeader (ppp);
+    /* If packet is a CacheCast packet we handle it */
+    CacheCastTag ccTag;
+    if (p->PeekPacketTag (ccTag))
+    {
+      PppHeader ppp;
+      p->RemoveHeader (ppp);
 
-    bool ret = m_senderElement->HandlePacket (p);
+      bool ret = m_senderUnit->HandlePacket (p);
 
-    p->AddHeader (ppp);
+      p->AddHeader (ppp);
 
-    if (!ret) {
-      //DO SOMETHING
-      ;
+      if (!ret) {
+        //DO SOMETHING
+        ;
+      }
+
     }
-
-
   }
 
   m_txMachineState = BUSY;

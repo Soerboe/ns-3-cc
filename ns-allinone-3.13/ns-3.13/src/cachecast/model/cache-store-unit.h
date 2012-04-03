@@ -4,7 +4,7 @@
 
 #include "ns3/object.h"
 #include "ns3/packet.h"
-#include "cachecast-element.h"
+#include "cachecast-unit.h"
 
 namespace ns3 {
 
@@ -12,7 +12,7 @@ namespace ns3 {
  * /brief Cache Store Unit
  *
  */
-class CacheStoreUnit : public CacheCastElement
+class CacheStoreUnit : public CacheCastUnit
 {
 public:
   /**
@@ -21,7 +21,7 @@ public:
   CacheStoreUnit ();
 
   /** 
-   * Documented in CacheCastElement 
+   * Documented in CacheCastUnit 
    */
   virtual bool HandlePacket (Ptr<Packet> p);
 

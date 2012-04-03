@@ -170,7 +170,6 @@ private:
 //     bool explicitFilename);
 
   ObjectFactory m_deviceFactory;
-  ObjectFactory m_serverDeviceFactory;
   ObjectFactory m_queueFactory;
   ObjectFactory m_channelFactory;
 //   ObjectFactory m_remoteChannelFactory;
