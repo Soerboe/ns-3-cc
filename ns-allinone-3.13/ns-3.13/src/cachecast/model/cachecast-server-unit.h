@@ -21,17 +21,19 @@ public:
 
   static TypeId GetTypeId (void);
 
+  /**
+   * Documented in CacheCastUnit
+   */
   bool HandlePacket (Ptr<Packet> p);
 
-
 private:
-  struct Cache
+  struct TableItem
   {
     uint32_t payloadId;
     double timeStamp;
     bool invalid;
 
-    Cache (uint32_t _payloadId, double _timeStamp, bool _invalid)
+    TableItem (uint32_t _payloadId, double _timeStamp, bool _invalid)
     {
       payloadId = _payloadId;
       timeStamp = _timeStamp;
@@ -39,7 +41,7 @@ private:
     }
   };
 
-  Cache m_cache; 
+  TableItem m_table;
 };
 
 } // namespace ns3

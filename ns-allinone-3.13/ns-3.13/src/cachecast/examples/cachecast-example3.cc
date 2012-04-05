@@ -38,18 +38,16 @@ main (int argc, char *argv[])
 
 
 // Ptr<Packet> packet = Create<Packet> (1000);
-// UdpHeader uh;
-// CacheCastHeader cch (111, 222, true);
-// PppHeader ppp;
+// CacheCastTag cct (111, 222);
+// FlowIdTag fid (999);
 // 
-// packet->AddHeader (uh);
-// packet->AddHeader (cch);
-// packet->AddHeader (ppp);
+// packet->AddPacketTag (cct);
+// packet->AddPacketTag (fid);
 // 
-// packet->RemoveHeader (ppp);
-// CacheCastHeader cch2;
-// packet->RemoveHeader (cch2);
-// cch2.Print(std::cerr);
+// CacheCastTag c;
+// packet->RemovePacketTag(c);
+// 
+// c.Print(std::cerr);
 // 
 // return 0;
 

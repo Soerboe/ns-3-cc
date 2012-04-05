@@ -83,7 +83,7 @@ CacheCastTag::Deserialize (TagBuffer buf)
 void 
 CacheCastTag::Print (std::ostream &os) const
 {
-  os << "CacheCastTag: Socket index=" << m_payloadId << " "
+  os << "CacheCastTag: Payload ID=" << m_payloadId << " "
      << "Payload size=" << m_payloadSize;
 }
 

@@ -15,7 +15,7 @@ namespace ns3 {
 NS_OBJECT_ENSURE_REGISTERED (CacheCastServerUnit);
 
 CacheCastServerUnit::CacheCastServerUnit ()
-  : m_cache (0, 0.0, true)
+  : m_table (0, 0.0, true)
 {
   NS_LOG_FUNCTION_NOARGS ();
 }
@@ -35,25 +35,20 @@ CacheCastServerUnit::HandlePacket (Ptr<Packet> p)
 {
   NS_LOG_FUNCTION (p);
 
-//   Ptr<Node> node = GetNode ();
-//   Ptr<CacheCastPid> ccp = node->GetObject<CacheCastPid> ();
-//   NS_ASSERT_MSG (ccp, "A CacheCast server must have a CacheCastPid object");
-
-
   CacheCastTag tag;
   bool hasTag = p->RemovePacketTag (tag);
   NS_ASSERT_MSG (hasTag, "No CacheCast packet tag");
 
   CacheCastHeader cch (tag.GetPayloadId (), tag.GetPayloadSize (), 0);
 
-  if (Simulator::Now ().GetSeconds () - m_cache.timeStamp > 1.0)
+  if (Simulator::Now ().GetSeconds () - m_table.timeStamp > 1.0)
   {
-    NS_LOG_DEBUG ("CacheCast: Cache invalidated");
-    m_cache.invalid = true;
-    m_cache.timeStamp = Simulator::Now ().GetSeconds ();
+    NS_LOG_DEBUG ("CacheCast server table invalidated");
+    m_table.invalid = true;
+    m_table.timeStamp = Simulator::Now ().GetSeconds ();
   }
 
-  if (m_cache.payloadId == tag.GetPayloadId () && m_cache.invalid == false)
+  if (m_table.payloadId == tag.GetPayloadId () && m_table.invalid == false)
   {
     // remove payload
     p->RemoveAtEnd (tag.GetPayloadSize ());
@@ -62,23 +57,12 @@ CacheCastServerUnit::HandlePacket (Ptr<Packet> p)
   else
   {
     // new payload ID
-    m_cache.payloadId = tag.GetPayloadId ();
-    m_cache.invalid = false;
+    m_table.payloadId = tag.GetPayloadId ();
+    m_table.invalid = false;
   }
 
   // TODO enable when CSU present
 //     p->AddHeader (cch);
-
-
-
-
-
-//   if (ccTag.IsLastPacket ())
-//   {
-//     NS_LOG_DEBUG ("Send() received the last CacheCast packet " << packet);
-//     uint32_t payloadId = ccp->CalculateNewPayloadId ();
-// 
-//   }
 
   return true;
 }
