@@ -77,6 +77,8 @@ CacheCast::Msend (Ptr<Packet> packet)
     // if DCCP gets supported handle it also
     NS_ASSERT_MSG ((*socket)->GetSocketType () == Socket::NS3_SOCK_DGRAM, "CacheCast supports only UDP sockets");
 
+    // TODO check if socket's NetDevice is a CacheCastNetDevice and only add tag if it is
+
     Ptr<Packet> p = Copy<Packet> (packet); 
     CacheCastTag tag (payloadId, p->GetSize ());
     p->AddPacketTag (tag);        
