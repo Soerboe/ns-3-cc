@@ -18,6 +18,7 @@
 #include "ns3/cachecast-net-device.h"
 #include "ns3/cachecast-channel.h"
 #include "ns3/cachecast-server-unit.h"
+#include "ns3/cache-store-unit.h"
 
 NS_LOG_COMPONENT_DEFINE ("CacheCastServerHelper");
 
@@ -229,6 +230,9 @@ CacheCastServerHelper::Install (Ptr<Node> server, Ptr<Node> node)
   /* Setup node */
   //TODO add a CSU
   Ptr<CacheCastNetDevice> nodeDevice = m_deviceFactory.Create<CacheCastNetDevice> ();
+  Ptr<CacheStoreUnit> csu = Create<CacheStoreUnit> ();
+  // TODO csu->SetSize() ...
+  nodeDevice->AddReceiverUnit (csu);
   Ptr<Queue> nodeQueue = m_queueFactory.Create<Queue> ();
   nodeDevice->SetAddress (Mac48Address::Allocate ());
   nodeDevice->SetQueue(nodeQueue);

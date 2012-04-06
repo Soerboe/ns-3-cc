@@ -29,6 +29,7 @@ main (int argc, char *argv[])
   LogComponentEnable ("CacheCastServerUnit", LOG_LEVEL_ALL);
   LogComponentEnable ("CacheCastPid", LOG_LEVEL_ALL);
   LogComponentEnable ("UdpEchoServerApplication", LOG_LEVEL_INFO);
+  LogComponentEnable ("CacheCastNetDevice", LOG_LEVEL_INFO);
 
 //   bool verbose = true;
 // 

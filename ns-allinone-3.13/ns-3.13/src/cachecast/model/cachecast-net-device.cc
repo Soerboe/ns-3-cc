@@ -37,6 +37,7 @@
 #include "cachecast-net-device.h"
 #include "cachecast-channel.h"
 #include "cachecast-tag.h"
+#include "cachecast-header.h"
 
 NS_LOG_COMPONENT_DEFINE ("CacheCastNetDevice");
 
@@ -228,9 +229,9 @@ CacheCastNetDevice::TransmitStart (Ptr<Packet> p)
 
   /* Here we call the HandlePacket() function of the sender unit
    * which modifies the packets before it is transmitted.
-   * If packet is a CacheCast packet we handle it */
+   * Only CacheCast packets are handled */
   CacheCastTag ccTag;
-  if (m_senderUnit != 0 && p->PeekPacketTag (ccTag))
+  if (m_senderUnit && p->PeekPacketTag (ccTag))
   {
     PppHeader ppp;
     p->RemoveHeader (ppp);
@@ -240,7 +241,7 @@ CacheCastNetDevice::TransmitStart (Ptr<Packet> p)
     p->AddHeader (ppp);
 
     if (!ret) {
-      //DO SOMETHING
+      //DO SOMETHING MAYBE
       ;
     }
 
@@ -348,14 +349,28 @@ CacheCastNetDevice::Receive (Ptr<Packet> packet)
     }
   else 
     {
-      // 
-      // Hit the trace hooks.  All of these hooks are in the same place in this 
-      // device becuase it is so simple, but this is not usually the case in 
-      // more complicated devices.
-      //
+      m_phyRxEndTrace (packet);
+
+      /* Here we call the HandlePacket() function of the receiver unit
+       * which modifies the packets when they are received.
+       * Only CacheCast packets are handled */
+      CacheCastHeader ccHrd;
+      if (m_receiverUnit && packet->PeekHeader (ccHrd))
+      {
+        PppHeader ppp;
+        packet->RemoveHeader (ppp);
+
+        std::cerr << "CSU" << this << "\n";
+        m_receiverUnit->HandlePacket (packet);
+        
+        // TODO remove when CSU is finished
+        packet->RemoveHeader (ccHrd);
+
+        packet->AddHeader (ppp);
+      }
+
       m_snifferTrace (packet);
       m_promiscSnifferTrace (packet);
-      m_phyRxEndTrace (packet);
 
       //
       // Strip off the point-to-point protocol header and forward this packet

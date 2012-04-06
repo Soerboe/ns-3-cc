@@ -61,8 +61,7 @@ CacheCastServerUnit::HandlePacket (Ptr<Packet> p)
     m_table.invalid = false;
   }
 
-  // TODO enable when CSU present
-//     p->AddHeader (cch);
+  p->AddHeader (cch);
 
   return true;
 }
