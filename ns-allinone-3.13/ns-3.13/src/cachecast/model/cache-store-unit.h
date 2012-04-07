@@ -25,8 +25,24 @@ public:
    */
   virtual bool HandlePacket (Ptr<Packet> p);
 
+  /**
+   * Set the size of the CSU's cache
+   */
+  void SetSize (uint32_t size);
+
+  /**
+   * Set the size of the CSU cache's slots
+   */
+  void SetSlotSize (uint32_t slotSize);
+
   static TypeId GetTypeId (void);
   virtual TypeId GetInstanceTypeId (void) const;
+
+private:
+  /* Size of the CSU's cache */
+  uint32_t m_size;
+  /* Size of the CSU cache's slots */
+  uint32_t m_slotSize;
 };
 
 } // namespace ns3

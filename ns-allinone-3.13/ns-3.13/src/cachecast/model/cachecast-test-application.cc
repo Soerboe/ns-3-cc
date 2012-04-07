@@ -68,7 +68,7 @@ CacheCastTestApplication::StartApplication (void)
 //    
 //     cc.Merge(cc2);
 
-  Ptr<Packet> packet = Create<Packet> (1235);
+  Ptr<Packet> packet = Create<Packet> (1400);
   NS_LOG_INFO ("Packet size: " << packet->GetSize ());
 
     if(!cc.Msend(packet)){
@@ -80,7 +80,7 @@ CacheCastTestApplication::StartApplication (void)
 //         }    
     }
 
-  Ptr<Packet> p = Create<Packet> (542);
+  Ptr<Packet> p = Create<Packet> (10);
     cc2.Msend (p);
 
 //   Ptr<Packet> packet2 = Create<Packet> (900);

@@ -16,9 +16,16 @@ CacheManagementUnit::CacheManagementUnit ()
 
 }
 
+void
+CacheManagementUnit::SetSize (uint32_t size)
+{
+  m_size = size;
+}
+
 bool
 CacheManagementUnit::HandlePacket (Ptr<Packet> p)
 {
+  NS_ASSERT_MSG (m_size > 0, "CMU's table size must be a positive integer");
   
   // THE HANDLING OF THE PACKET
 

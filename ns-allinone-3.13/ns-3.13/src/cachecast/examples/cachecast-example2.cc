@@ -14,7 +14,7 @@ int
 main (int argc, char *argv[])
 {
   LogComponentEnable ("CacheCastTestApplication", LOG_LEVEL_ALL);
-  LogComponentEnable ("CacheCastServerNetDevice", LOG_LEVEL_ALL);
+  LogComponentEnable ("CacheCastNetDevice", LOG_LEVEL_INFO);
   LogComponentEnable ("CacheCastPid", LOG_LEVEL_ALL);
   LogComponentEnable ("UdpEchoServerApplication", LOG_LEVEL_INFO);
 

@@ -58,15 +58,15 @@ main (int argc, char *argv[])
   /* Set up channel n0 <-> n1 */
   CacheCastServerHelper ccHelper;
 //   pointToPoint.SetDeviceAttribute ("DataRate", StringValue ("5Mbps"));
-  ccHelper.SetDeviceAttribute ("DataRate", StringValue ("10Mbps"));
-  ccHelper.SetChannelAttribute ("Delay", StringValue ("10ms"));
+  ccHelper.SetDeviceAttribute ("DataRate", StringValue ("100Kbps"));
+  ccHelper.SetChannelAttribute ("Delay", StringValue ("500ms"));
 
   NetDeviceContainer devices1 = ccHelper.Install (nodes.Get(0), nodes.Get(1));
 //   ccDevice.SetAttribute ("Mtu", UintegerValue (512));
 
   /* Set up channel n0 <-> n2 */
-  ccHelper.SetDeviceAttribute ("DataRate", StringValue ("10Mbps"));
-  ccHelper.SetChannelAttribute ("Delay", StringValue ("10ms"));
+  ccHelper.SetDeviceAttribute ("DataRate", StringValue ("100Kbps"));
+  ccHelper.SetChannelAttribute ("Delay", StringValue ("500ms"));
 
   NetDeviceContainer devices2 = ccHelper.Install (nodes.Get(0), nodes.Get(2));
 

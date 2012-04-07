@@ -25,8 +25,17 @@ public:
    */
   virtual bool HandlePacket (Ptr<Packet> p);
 
+  /**
+   * Set the size of the CMU's table
+   */
+  void SetSize (uint32_t size);
+
   static TypeId GetTypeId (void);
   virtual TypeId GetInstanceTypeId (void) const;
+
+private:
+  /* Size of the CMU's table */
+  uint32_t m_size;
 };
 
 } // namespace ns3

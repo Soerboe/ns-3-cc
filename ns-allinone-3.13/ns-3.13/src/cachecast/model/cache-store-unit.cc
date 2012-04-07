@@ -16,6 +16,18 @@ CacheStoreUnit::CacheStoreUnit ()
 
 }
 
+void
+CacheStoreUnit::SetSize (uint32_t size)
+{
+  m_size = size;
+}
+
+void
+CacheStoreUnit::SetSlotSize (uint32_t slotSize)
+{
+  m_slotSize = slotSize;
+}
+
 bool
 CacheStoreUnit::HandlePacket (Ptr<Packet> p)
 {
