@@ -59,14 +59,14 @@ main (int argc, char *argv[])
   CacheCastServerHelper ccHelper;
 //   pointToPoint.SetDeviceAttribute ("DataRate", StringValue ("5Mbps"));
   ccHelper.SetDeviceAttribute ("DataRate", StringValue ("100Kbps"));
-  ccHelper.SetChannelAttribute ("Delay", StringValue ("500ms"));
+  ccHelper.SetChannelAttribute ("Delay", StringValue ("2ms"));
 
   NetDeviceContainer devices1 = ccHelper.Install (nodes.Get(0), nodes.Get(1));
 //   ccDevice.SetAttribute ("Mtu", UintegerValue (512));
 
   /* Set up channel n0 <-> n2 */
   ccHelper.SetDeviceAttribute ("DataRate", StringValue ("100Kbps"));
-  ccHelper.SetChannelAttribute ("Delay", StringValue ("500ms"));
+  ccHelper.SetChannelAttribute ("Delay", StringValue ("2ms"));
 
   NetDeviceContainer devices2 = ccHelper.Install (nodes.Get(0), nodes.Get(2));
 
@@ -97,6 +97,8 @@ main (int argc, char *argv[])
   app->AddAddress (addr1);
   app->AddAddress (addr2);
   app->AddAddress (addr2);
+  app->AddAddress (addr1);
+  app->AddAddress (addr1);
   app->AddAddress (addr1);
   app->AddAddress (addr1);
   nodes.Get (0)->AddApplication (app);

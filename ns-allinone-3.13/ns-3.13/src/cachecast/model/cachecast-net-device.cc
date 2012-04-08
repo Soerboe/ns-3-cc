@@ -360,7 +360,6 @@ CacheCastNetDevice::Receive (Ptr<Packet> packet)
         PppHeader ppp;
         packet->RemoveHeader (ppp);
 
-        std::cerr << "CSU" << this << "\n";
         m_receiverUnit->HandlePacket (packet);
         
         // TODO remove when CSU is finished

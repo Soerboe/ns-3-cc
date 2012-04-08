@@ -48,7 +48,7 @@ CacheCastServerUnit::HandlePacket (Ptr<Packet> p)
     m_table.timeStamp = Simulator::Now ().GetSeconds ();
   }
 
-  if (m_table.payloadId == tag.GetPayloadId () && m_table.invalid == false)
+  if (m_table.payloadId == tag.GetPayloadId () && !m_table.invalid)
   {
     // remove payload
     p->RemoveAtEnd (tag.GetPayloadSize ());

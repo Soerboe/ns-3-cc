@@ -2,8 +2,6 @@
 #ifndef __CACHECAST_SERVER_HELPER_H__
 #define __CACHECAST_SERVER_HELPER_H__
 
-#include "ns3/cachecast-server-net-device.h"
-
 #include <string>
 
 #include "ns3/object-factory.h"
