@@ -24,7 +24,7 @@ class Node;
  * PcapUserHelperForDevice and AsciiTraceUserHelperForDevice are
  * "mixins".
  */
-class CacheCastServerHelper //: public PcapHelperForDevice, public AsciiTraceHelperForDevice
+class CacheCastServerHelper : public PcapHelperForDevice, public AsciiTraceHelperForDevice
 {
 public:
   /**
@@ -52,11 +52,11 @@ public:
    * Set the type of queue to create and associated to each
    * CacheCastServerNetDevice created through CacheCastServerHelper::Install.
    */
-//   void SetQueue (std::string type,
-//                  std::string n1 = "", const AttributeValue &v1 = EmptyAttributeValue (),
-//                  std::string n2 = "", const AttributeValue &v2 = EmptyAttributeValue (),
-//                  std::string n3 = "", const AttributeValue &v3 = EmptyAttributeValue (),
-//                  std::string n4 = "", const AttributeValue &v4 = EmptyAttributeValue ());
+  void SetQueue (std::string type,
+                 std::string n1 = "", const AttributeValue &v1 = EmptyAttributeValue (),
+                 std::string n2 = "", const AttributeValue &v2 = EmptyAttributeValue (),
+                 std::string n3 = "", const AttributeValue &v3 = EmptyAttributeValue (),
+                 std::string n4 = "", const AttributeValue &v4 = EmptyAttributeValue ());
 
   /**
    * Set an attribute value to be propagated to each NetDevice created by the
@@ -104,16 +104,6 @@ public:
 
   /**
    * \param a first node
-   * \param b second node
-   *
-   * Saves you from having to construct a temporary NodeContainer. 
-   * Also, if MPI is enabled, for distributed simulations, 
-   * appropriate remote point-to-point channels are created.
-   */
-//   NetDeviceContainer Install (Ptr<Node> a, Ptr<Node> b);
-
-  /**
-   * \param a first node
    * \param bName name of second node
    *
    * Saves you from having to construct a temporary NodeContainer.
@@ -148,7 +138,7 @@ private:
    * \param promiscuous If true capture all possible packets available at the device.
    * \param explicitFilename Treat the prefix as an explicit filename if true
    */
-//   virtual void EnablePcapInternal (std::string prefix, Ptr<NetDevice> nd, bool promiscuous, bool explicitFilename);
+  virtual void EnablePcapInternal (std::string prefix, Ptr<NetDevice> nd, bool promiscuous, bool explicitFilename);
 
   /**
    * \brief Enable ascii trace output on the indicated net device.
@@ -161,16 +151,15 @@ private:
    * \param prefix Filename prefix to use for ascii trace files.
    * \param nd Net device for which you want to enable tracing.
    */
-//   virtual void EnableAsciiInternal (
-//     Ptr<OutputStreamWrapper> stream,
-//     std::string prefix,
-//     Ptr<NetDevice> nd,
-//     bool explicitFilename);
+  virtual void EnableAsciiInternal (
+    Ptr<OutputStreamWrapper> stream,
+    std::string prefix,
+    Ptr<NetDevice> nd,
+    bool explicitFilename);
 
   ObjectFactory m_deviceFactory;
   ObjectFactory m_queueFactory;
   ObjectFactory m_channelFactory;
-//   ObjectFactory m_remoteChannelFactory;
 };
 
 } // namespace ns3

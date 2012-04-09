@@ -62,7 +62,6 @@ main (int argc, char *argv[])
   ccHelper.SetChannelAttribute ("Delay", StringValue ("2ms"));
 
   NetDeviceContainer devices1 = ccHelper.Install (nodes.Get(0), nodes.Get(1));
-//   ccDevice.SetAttribute ("Mtu", UintegerValue (512));
 
   /* Set up channel n0 <-> n2 */
   ccHelper.SetDeviceAttribute ("DataRate", StringValue ("100Kbps"));
@@ -104,6 +103,8 @@ main (int argc, char *argv[])
   nodes.Get (0)->AddApplication (app);
   app->SetStartTime (Seconds (2.0));
   app->SetStopTime (Seconds (10.0));
+
+//   ccHelper.EnablePcapAll ("cc");
 
   Simulator::Run ();
   Simulator::Destroy ();

@@ -20,6 +20,7 @@ class CacheCast : public Object
 public:
     typedef std::vector<Ptr<Socket> >::const_iterator Iterator;
  
+    CacheCast (void);
     static TypeId GetTypeId (void);     
     bool Msend(Ptr<Packet> packet);
     void AddSocket(Ptr<Socket> socket);
