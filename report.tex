@@ -82,14 +82,15 @@ Bla bla...
 \section{ns-3}
 
 
-\section{Common data structures}
+\section{Common data structures and classes}
 In this section we explain the common data structures used by the different 
-parts of the ns-3 implementation of CacheCast. These data structures are the 
-CacheCast header and the CacheCast packet tag.
+parts of the ns-3 implementation of CacheCast.
 
 \subsection{CacheCast header}
 The CacheCast header is represented in ns-3 as a class named CacheCastHeader. 
-This class is derived from the general ns3::Header class. The class 
+This class is derived from the general ns3::Header class. The class contains the 
+same members as the header described in the design of CacheCast, namely payload 
+ID, payload size and index.
 
 \begin{footnotesize}
 \begin{lstlisting}[language=C]
@@ -129,6 +130,43 @@ private:
 
 \subsection{CacheCast packet tag}
 
+\subsection{CacheCastUnit}
+The CacheCastUnit class is an abstract base class which should be derived from 
+in order to support different packet handling schemes in CacheCast. This class 
+contains only one CacheCast related function namely \texttt{virtual bool 
+HandlePacket (Ptr<Packet> p)}. This function takes a pointer to a packet which 
+it can modify based on what the derived class is supposed to do. The derived 
+classes is supposed to override this function. There are currently three derived 
+classes from the CacheCastUnit base class; CacheCastServerUnit, CacheManagementUnit 
+and CacheStoreUnit. These classed will be explained later in this document.
+
+\subsection{CacheCastNetDevice}
+In the ns-3 network simulator the abstraction of the physical and the 
+data link layer is modeled by a NetDevice. This NetDevice receives a 
+packet from the network layer, adds link layer headers, and puts the packet onto 
+the channel. Because of this design we have chosen to create a new NetDevice 
+which supports CacheCast. This NetDevice is called CacheCastNetDevice and 
+is strongly based on the PointToPointNetDevice. In the first attempt of creating 
+this NetDevice we tried to make CacheCastNetDevice a derived class of the 
+PointToPointNetDevice. This proved difficult due to the design of the 
+PointToPointNetDevice. There was no way to get to the packet after the 
+transmission queue and before it was transmitted onto the link, which is crucial 
+for the CacheCast technique. Because of this we chose to copy much of the code 
+from PointToPointNetDevice and adapt it to the CacheCast scenario. Since CacheCast is only supported on 
+point-to-point links the CacheCastNetDevice need not be generalized into 
+supporting arbitrary link level technologies.
+
+The main idea of CacheCast is to intercept the packet before it is transmitted 
+onto the link and remove redundant payload.
+
+In the Linux implementation the CacheCast packets is intercepted just before the 
+link layer. In our implementation in ns-3 this interception will happen in the 
+NetDevice. All NetDevices in ns-3 have a virtual function called Send(). This function is 
+called from the network layer with the packet as an argument and this is where 
+we will intercept the packet.
+
+\subsection{CacheCastChannel}
+
 
 
 \section{Network support}
@@ -150,32 +188,15 @@ The CacheCast server support consists mainly of two parts; the interface to the
 applications and the underlying packet handling mechanisms. The implementation 
 in ns-3 closely resembles this division. The API exposed to the applications is 
 discussed in section \ref{api} and the underlying handling of 
-packets and addition of the CacheCast header is discussed in the following section.
+packets and addition of the CacheCast header is discussed in the next section.
 
 \subsection{Underlying packet handling mechanism}
 The tasks of the underlying packet handling mechanism in CacheCast is to ensure 
 that the packets are put onto the link in a tight chain and to add the CacheCast 
 header to each packet. In the Linux implementation of CacheCast this mechanism 
 is handled by a kernel module located between the network layer and the link 
-layer. In the ns-3 network simulator the abstraction of the physical and the 
-data link layer is modeled by a NetDevice. This NetDevice receives a 
-packet from the network layer, adds link layer headers, and puts the packet onto 
-the channel. Because of this design we have chosen to create a new NetDevice 
-which supports CacheCast. This NetDevice is called CacheCastServerNetDevice and 
-is derived from the PointToPointNetDevice. Since CacheCastServerNetDevice has 
-PointToPointNetDevice as a base class we can take advantage of the already 
-existing features in the PointToPointNetDevice. And since CacheCast is only supported on 
-point-to-point links the CacheCastServerNetDevice need not be generalized into 
-supporting arbitrary link level technologies.
+layer. 
 
-In the Linux implementation the CacheCast packets is intercepted just before the 
-link layer. In our implementation in ns-3 this interception will happen in the 
-NetDevice. All NetDevices in ns-3 have a virtual function called Send(). This function is 
-called from the network layer with the packet as an argument and this is where 
-we will intercept the packet.
-
-
-The \texttt{CacheCastServerNetDevice} is the 
 
 CacheCastPid
 
