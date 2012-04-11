@@ -11,18 +11,17 @@
 // #include "ns3/mpi-receiver.h"
 #include "ns3/trace-helper.h"
 
-#include "cachecast-server-helper.h"
-#include "ns3/cachecast-pid.h"
+#include "cachecast-helper.h"
 #include "ns3/cachecast-net-device.h"
 #include "ns3/cachecast-channel.h"
-#include "ns3/cachecast-server-unit.h"
+#include "ns3/cache-management-unit.h"
 #include "ns3/cache-store-unit.h"
 
-NS_LOG_COMPONENT_DEFINE ("CacheCastServerHelper");
+NS_LOG_COMPONENT_DEFINE ("CacheCastHelper");
 
 namespace ns3 {
 
-CacheCastServerHelper::CacheCastServerHelper ()
+CacheCastHelper::CacheCastHelper ()
 {
   m_deviceFactory.SetTypeId ("ns3::CacheCastNetDevice");
   m_queueFactory.SetTypeId ("ns3::DropTailQueue");
@@ -30,7 +29,7 @@ CacheCastServerHelper::CacheCastServerHelper ()
 }
 
 void 
-CacheCastServerHelper::SetQueue (std::string type,
+CacheCastHelper::SetQueue (std::string type,
                               std::string n1, const AttributeValue &v1,
                               std::string n2, const AttributeValue &v2,
                               std::string n3, const AttributeValue &v3,
@@ -44,19 +43,19 @@ CacheCastServerHelper::SetQueue (std::string type,
 }
 
 void 
-CacheCastServerHelper::SetDeviceAttribute (std::string n1, const AttributeValue &v1)
+CacheCastHelper::SetDeviceAttribute (std::string n1, const AttributeValue &v1)
 {
   m_deviceFactory.Set (n1, v1);
 }
 
 void 
-CacheCastServerHelper::SetChannelAttribute (std::string n1, const AttributeValue &v1)
+CacheCastHelper::SetChannelAttribute (std::string n1, const AttributeValue &v1)
 {
   m_channelFactory.Set (n1, v1);
 }
 
 void 
-CacheCastServerHelper::EnablePcapInternal (std::string prefix, Ptr<NetDevice> nd, bool promiscuous, bool explicitFilename)
+CacheCastHelper::EnablePcapInternal (std::string prefix, Ptr<NetDevice> nd, bool promiscuous, bool explicitFilename)
 {
   //
   // All of the Pcap enable functions vector through here including the ones
@@ -66,7 +65,7 @@ CacheCastServerHelper::EnablePcapInternal (std::string prefix, Ptr<NetDevice> nd
   Ptr<CacheCastNetDevice> device = nd->GetObject<CacheCastNetDevice> ();
   if (device == 0)
     {
-      NS_LOG_INFO ("CacheCastServerHelper::EnablePcapInternal(): Device " << device << " not of type ns3::CacheCastNetDevice");
+      NS_LOG_INFO ("CacheCastHelper::EnablePcapInternal(): Device " << device << " not of type ns3::CacheCastNetDevice");
       return;
     }
 
@@ -88,7 +87,7 @@ CacheCastServerHelper::EnablePcapInternal (std::string prefix, Ptr<NetDevice> nd
 }
 
 void 
-CacheCastServerHelper::EnableAsciiInternal (
+CacheCastHelper::EnableAsciiInternal (
   Ptr<OutputStreamWrapper> stream, 
   std::string prefix, 
   Ptr<NetDevice> nd,
@@ -102,7 +101,7 @@ CacheCastServerHelper::EnableAsciiInternal (
   Ptr<CacheCastNetDevice> device = nd->GetObject<CacheCastNetDevice> ();
   if (device == 0)
     {
-      NS_LOG_INFO ("CacheCastServerHelper::EnableAsciiInternal(): Device " << device << 
+      NS_LOG_INFO ("CacheCastHelper::EnableAsciiInternal(): Device " << device << 
                    " not of type ns3::CacheCastNetDevice");
       return;
     }
@@ -197,30 +196,28 @@ CacheCastServerHelper::EnableAsciiInternal (
 }
 
 NetDeviceContainer
-CacheCastServerHelper::Install (Ptr<Node> server, Ptr<Node> node)
+CacheCastHelper::Install (Ptr<Node> n1, Ptr<Node> n2)
 {
-  NS_ASSERT (node != 0);
-  NS_ASSERT (server != 0);
-
-  /* Add a CacheCastPid to the server node */
-  if (!server->GetObject<CacheCastPid> ()) {
-    Ptr<CacheCastPid> ccp = Create<CacheCastPid> ();
-    server->AggregateObject(ccp);
-  }
+  NS_ASSERT (n1 != 0);
+  NS_ASSERT (n2 != 0);
 
   NetDeviceContainer container;
 
-  /* Setup server */
-  Ptr<CacheCastNetDevice> serverDevice = m_deviceFactory.Create<CacheCastNetDevice> ();
-  Ptr<CacheCastServerUnit> serverUnit = Create<CacheCastServerUnit> ();
-  serverDevice->AddSenderUnit (serverUnit);
-  Ptr<Queue> serverQueue = m_queueFactory.Create<Queue> ();
-  serverDevice->SetAddress (Mac48Address::Allocate ());
-  serverDevice->SetQueue (serverQueue);
-  server->AddDevice (serverDevice);
+  /* Setup node 1 */
+  Ptr<CacheCastNetDevice> dev1 = m_deviceFactory.Create<CacheCastNetDevice> ();
+  Ptr<CacheManagementUnit> cmu = Create<CacheManagementUnit> ();
+  
+  // TODO Change
+  cmu->SetSize(10);
+  
+  dev1->AddSenderUnit (cmu);
+  Ptr<Queue> queue1 = m_queueFactory.Create<Queue> ();
+  dev1->SetAddress (Mac48Address::Allocate ());
+  dev1->SetQueue (queue1);
+  n1->AddDevice (dev1);
 
-  /* Setup node */
-  Ptr<CacheCastNetDevice> nodeDevice = m_deviceFactory.Create<CacheCastNetDevice> ();
+  /* Setup node 2 */
+  Ptr<CacheCastNetDevice> dev2 = m_deviceFactory.Create<CacheCastNetDevice> ();
   Ptr<CacheStoreUnit> csu = Create<CacheStoreUnit> ();
   
   // TODO Change these two
@@ -228,23 +225,23 @@ CacheCastServerHelper::Install (Ptr<Node> server, Ptr<Node> node)
   // TODO 
   csu->SetSlotSize (100);
 
-  nodeDevice->AddReceiverUnit (csu);
-  Ptr<Queue> nodeQueue = m_queueFactory.Create<Queue> ();
-  nodeDevice->SetAddress (Mac48Address::Allocate ());
-  nodeDevice->SetQueue(nodeQueue);
-  node->AddDevice (nodeDevice);
+  dev2->AddReceiverUnit (csu);
+  Ptr<Queue> queue2 = m_queueFactory.Create<Queue> ();
+  dev2->SetAddress (Mac48Address::Allocate ());
+  dev2->SetQueue(queue2);
+  n2->AddDevice (dev2);
   
   Ptr<CacheCastChannel> channel = m_channelFactory.Create<CacheCastChannel> ();
-  serverDevice->Attach (channel);
-  nodeDevice->Attach (channel);
-  container.Add (serverDevice);
-  container.Add (nodeDevice);
+  dev1->Attach (channel);
+  dev2->Attach (channel);
+  container.Add (dev1);
+  container.Add (dev2);
 
   return container;
 }
 
 NetDeviceContainer 
-CacheCastServerHelper::Install (NodeContainer c)
+CacheCastHelper::Install (NodeContainer c)
 {
   NS_ASSERT (c.GetN () == 2);
   return Install (c.Get (0), c.Get (1));
