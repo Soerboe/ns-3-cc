@@ -82,11 +82,65 @@ Bla bla...
 \section{ns-3}
 
 
-\section{Common data structures and classes}
+\section{Application programming interface (API)\label{api}} % HOW TO USE IT
+We have now talked about the general design of CacheCast and about the details 
+of the ns-3 network simulator. In this section we will explain how the CacheCast 
+system is used by script authors. bla bla ...
+
+
+\subsection{xxx}
+
+- first suggestion
+- second suggestion
+- what we ended up doing
+
+
+\subsection{Helpers}
+
+
+
+\section{Implementation details} % HOW IT WORKS
+In the previous section we looked at the implementation of CacheCast in ns-3 
+from the user perspective. In this section we will dig deeper into the 
+implementation details and look at the implementation from a developer 
+perspective. First we will take a birds view of the design of implementation to 
+get a general overview of what is done. Then we look at common data structures 
+used throughout the implementation. At last we elaborate on the specific 
+implementation details of each part.
+
+\subsection{General overview}
+The implementation of CacheCast in ns-3 (as in the general design of CacheCast) 
+consists of three main parts; server support, CMU and CSU. As explained in the 
+previous section, to support CacheCast, packets are sent with the 
+CacheCast::Msend() function in the ns-3 applications on the server node. Then 
+the packets traverse the network layers and is intercepted by the CacheCastNetDevice. In 
+this CacheCastNetDevice a CacheCastServerUnit is installed which adds a 
+CacheCastHeader to the packets and truncates packets with redundant payload. The 
+packets then traverse the channel and is received by a new CacheCastNetDevice 
+on the other end. In this CacheCastNetDevice a CacheStoreUnit is 
+installed which adds payload to the truncated packets and remove the 
+CacheCastHeader. The packets are then handled as normal IP packets in the node. 
+If the packet is destined for another node, it is again intercepted by a new 
+CacheCastNetDevice in which a CacheManagementUnit is installed. This unit adds 
+the CacheCastHeader to the packet and truncates packets with redundant payload. 
+The packets then traverse a new channel and is received by a new 
+CacheCastNetDevice with a CacheStoreUnit installed. This process is continued 
+for each node supporting CacheCast on the packet's path to its destination. An 
+graphical overview of this structure can be seen in figure \vref{fig_overview}.
+
+\begin{figure}[!t]
+\centering
+\includegraphics[width=3.5in]{overview}
+\caption{The structure of the CacheCast system in ns-3}
+\label{fig_overview}
+\end{figure}
+
+
+\subsection{Common data structures and classes}
 In this section we explain the common data structures used by the different 
 parts of the ns-3 implementation of CacheCast.
 
-\subsection{CacheCast header}
+\subsubsection{CacheCast header}
 The CacheCast header is represented in ns-3 as a class named CacheCastHeader. 
 This class is derived from the general ns3::Header class. The class contains the 
 same members as the header described in the design of CacheCast, namely payload 
@@ -103,12 +157,12 @@ class CacheCastHeader : public Header
 public:
   CacheCastHeader ();
   CacheCastHeader (uint32_t payloadId, 
-    uint32_t payloadSize, uint32_t index);
+    uint16_t payloadSize, uint32_t index);
   uint32_t GetPayloadId (void) const;
-  uint32_t GetPayloadSize (void) const;
+  uint16_t GetPayloadSize (void) const;
   uint32_t GetIndex (void) const;
   void SetPayloadId (uint32_t payloadId);
-  void SetPayloadSize (uint32_t payloadSize);
+  void SetPayloadSize (uint16_t payloadSize);
   void SetIndex (uint32_t index);
 
   static TypeId GetTypeId (void);
@@ -119,7 +173,7 @@ public:
   uint32_t Deserialize (Buffer::Iterator start);
 private:
   uint32_t m_payloadId;
-  uint32_t m_payloadSize;
+  uint16_t m_payloadSize;
   uint32_t m_index;
 };
 }
@@ -128,19 +182,19 @@ private:
 \end{footnotesize}
 
 
-\subsection{CacheCast packet tag}
+\subsubsection{CacheCast packet tag}
 
-\subsection{CacheCastUnit}
+\subsubsection{CacheCastUnit}
 The CacheCastUnit class is an abstract base class which should be derived from 
 in order to support different packet handling schemes in CacheCast. This class 
-contains only one CacheCast related function namely \texttt{virtual bool 
+contains only one CacheCast related function namely \textsf{virtual bool 
 HandlePacket (Ptr<Packet> p)}. This function takes a pointer to a packet which 
 it can modify based on what the derived class is supposed to do. The derived 
 classes is supposed to override this function. There are currently three derived 
 classes from the CacheCastUnit base class; CacheCastServerUnit, CacheManagementUnit 
 and CacheStoreUnit. These classed will be explained later in this document.
 
-\subsection{CacheCastNetDevice}
+\subsubsection{CacheCastNetDevice}
 In the ns-3 network simulator the abstraction of the physical and the 
 data link layer is modeled by a NetDevice. This NetDevice receives a 
 packet from the network layer, adds link layer headers, and puts the packet onto 
@@ -165,15 +219,15 @@ NetDevice. All NetDevices in ns-3 have a virtual function called Send(). This fu
 called from the network layer with the packet as an argument and this is where 
 we will intercept the packet.
 
-\subsection{CacheCastChannel}
+\subsubsection{CacheCastChannel}
 
 
 
-\section{Network support}
+\subsection{Network support}
 
 
 
-\section{Server support}
+\subsection{Server support}
 The CacheCast system relies on CacheCast support on the server in order to 
 remove redundant payload in the network. This server support should send all 
 packets sequentially onto the link and truncate all packets beside the first 
@@ -190,7 +244,7 @@ in ns-3 closely resembles this division. The API exposed to the applications is
 discussed in section \ref{api} and the underlying handling of 
 packets and addition of the CacheCast header is discussed in the next section.
 
-\subsection{Underlying packet handling mechanism}
+\subsubsection{Underlying packet handling mechanism}
 The tasks of the underlying packet handling mechanism in CacheCast is to ensure 
 that the packets are put onto the link in a tight chain and to add the CacheCast 
 header to each packet. In the Linux implementation of CacheCast this mechanism 
@@ -201,15 +255,6 @@ layer.
 CacheCastPid
 
 
-\subsection{Application programming interface (API)\label{api}}
-
-- first suggestion
-- second suggestion
-- what we ended up doing
-
-
-
-\section{Helpers}
 
 
 \section{Evaluation}
