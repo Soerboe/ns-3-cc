@@ -104,7 +104,7 @@ In the previous section we looked at the implementation of CacheCast in ns-3
 from the user perspective. In this section we will dig deeper into the 
 implementation details and look at the implementation from a developer 
 perspective. First we will take a birds view of the design of implementation to 
-get a general overview of what is done. Then we look at common data structures 
+get a general overview of how it works. Then we look at common data structures 
 used throughout the implementation. At last we elaborate on the specific 
 implementation details of each part.
 
@@ -183,16 +183,26 @@ private:
 
 
 \subsubsection{CacheCast packet tag}
+In ns-3 one have the possibility to add packet tags to packets in order to store 
+information on a packet level. In the implementation of CacheCast we use packet 
+tags to store CacheCast related values when the packet is processed in a node 
+(where the CacheCast header is not present). These values are the payload ID and 
+the payload size. These are necessary for the CMU in order to uniquely identify 
+CacheCast packets and handle them correctly. 
+
+% The CacheCastTag is added by the 
+% Msend() function on the server and the CSU on the other nodes. It is removed by 
+% the CacheCastServerUnit and the CMU TODO DO WE NEED TO REMOVE THE TAG?
 
 \subsubsection{CacheCastUnit}
 The CacheCastUnit class is an abstract base class which should be derived from 
 in order to support different packet handling schemes in CacheCast. This class 
-contains only one CacheCast related function namely \textsf{virtual bool 
+contains only one CacheCast related function named \textsf{virtual bool 
 HandlePacket (Ptr<Packet> p)}. This function takes a pointer to a packet which 
-it can modify based on what the derived class is supposed to do. The derived 
-classes is supposed to override this function. There are currently three derived 
-classes from the CacheCastUnit base class; CacheCastServerUnit, CacheManagementUnit 
-and CacheStoreUnit. These classed will be explained later in this document.
+it can modify. The derived classes is supposed to override this function. There 
+are currently three derived classes from the CacheCastUnit base class; 
+CacheCastServerUnit, CacheManagementUnit and CacheStoreUnit. These classed will 
+be explained later in this document.
 
 \subsubsection{CacheCastNetDevice}
 In the ns-3 network simulator the abstraction of the physical and the 
@@ -208,22 +218,24 @@ transmission queue and before it was transmitted onto the link, which is crucial
 for the CacheCast technique. Because of this we chose to copy much of the code 
 from PointToPointNetDevice and adapt it to the CacheCast scenario. Since CacheCast is only supported on 
 point-to-point links the CacheCastNetDevice need not be generalized into 
-supporting arbitrary link level technologies.
+arbitrary link level technologies.
 
-The main idea of CacheCast is to intercept the packet before it is transmitted 
-onto the link and remove redundant payload.
+The CacheCastNetDevice is used both on the server and on nodes and it is used 
+together with both a CMU and CSU. To support these scenarios we have added 
+senderUnit and receiverUnit objects to the class. These objects are derived from 
+the CacheStoreUnit class so their purpose is to modify packets. The main idea of 
+CacheCast is to intercept the packets before they are transmitted onto the link and 
+remove redundant payload. In ns-3 this interception is done in the 
+CacheCastNetDevice::TransmitStart() function.  The packets need to be 
+intercepted also on the receiver side, and this is done in 
+CacheCastNetDevice::Receive. In these functions the HandlePacket() function of 
+the senderUnit and receiverUnit is called, respectively. 
 
-In the Linux implementation the CacheCast packets is intercepted just before the 
-link layer. In our implementation in ns-3 this interception will happen in the 
-NetDevice. All NetDevices in ns-3 have a virtual function called Send(). This function is 
-called from the network layer with the packet as an argument and this is where 
-we will intercept the packet.
 
 \subsubsection{CacheCastChannel}
-
-
-
-\subsection{Network support}
+The CacheCastChannel is no more than an adapted version of the 
+PointToPointChannel is order to support the CacheCastNetDevice. No packet 
+handling related to the CacheCast technique is done in this class.
 
 
 
@@ -256,6 +268,9 @@ CacheCastPid
 
 
 
+\subsection{Network support}
+
+
 
 \section{Evaluation}
 
@@ -282,6 +297,30 @@ The authors would like to thank...
 %\bibliographystyle{IEEEtran}
 % argument is your BibTeX string definitions and bibliography database(s)
 %\bibliography{IEEEabrv,../bib/paper}
+
+\section*{Contributions}
+% \begin{table}[!t]
+% increase table row spacing, adjust to taste
+% \renewcommand{\arraystretch}{1.3}
+%  if using array.sty, it might be a good idea to tweak the value of
+%  \extrarowheight as needed to properly center the text within the cells
+% \caption{An Example of a Table}
+% \label{table_example}
+% \centering
+% Some packages, such as MDW tools, offer better commands for making tables
+% than the plain LaTeX2e tabular which is used here.
+\begin{tabular}{|c||c|}
+\hline
+Kanat~Sarsekeyev & ...\\
+\hline
+Bekzahan~Kassymbekov & ...\\
+\hline
+Rizwan~Ali~Ahmed & ...\\
+\hline
+Dag~Henning~Liodden~Sørbø & ...\\
+\hline
+\end{tabular}
+% \end{table}
 
 
 %%---------------------------------------------------------------------------%%
