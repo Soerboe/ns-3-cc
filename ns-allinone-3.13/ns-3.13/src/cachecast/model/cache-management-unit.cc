@@ -44,6 +44,7 @@ CacheManagementUnit::HandlePacket (Ptr<Packet> p)
 {
   NS_ASSERT_MSG (m_size > 0, "CMU's table size must be a positive integer");
   
+<<<<<<< HEAD
   CacheCastHeader ccHrd;
   p->RemoveHeader (ccHrd);
   
@@ -67,6 +68,11 @@ CacheManagementUnit::HandlePacket (Ptr<Packet> p)
     ccHrd.SetIndex( table[ hashValue ].index );
   }
   p->AddHeader (ccHrd);
+=======
+
+  // THE HANDLING OF THE PACKET
+
+>>>>>>> 4f71ed81737a9149a7bc8ca99fa8743d6df0db87
   return true;
 }
 

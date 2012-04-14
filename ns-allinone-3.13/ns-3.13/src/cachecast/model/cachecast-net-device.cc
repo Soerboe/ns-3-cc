@@ -240,11 +240,18 @@ CacheCastNetDevice::TransmitStart (Ptr<Packet> p)
   
   if (m_senderUnit && p->PeekPacketTag (ccTag))
   {
+    NS_LOG_LOGIC ("Packet being handled by sender unit");
+
     PppHeader ppp;
     p->RemoveHeader (ppp);
 
     bool ret = m_senderUnit->HandlePacket (p);
     O->HandlePacket (p);
+
+    // TODO remove
+    CacheCastHeader cch;
+    if (p->PeekHeader (cch) == 0)
+      p->AddHeader (cch);
 
     p->AddHeader (ppp);
 
@@ -363,15 +370,29 @@ CacheCastNetDevice::Receive (Ptr<Packet> packet)
       /* Here we call the HandlePacket() function of the receiver unit
        * which modifies the packets when they are received.
        * Only CacheCast packets are handled */
-      CacheCastHeader ccHrd;
-      if (m_receiverUnit && packet->PeekHeader (ccHrd))
+      CacheCastHeader ccHdr;
+      if (m_receiverUnit && packet->PeekHeader (ccHdr))
       {
       
         PppHeader ppp;
         packet->RemoveHeader (ppp);
         m_receiverUnit->HandlePacket (packet);
+<<<<<<< HEAD
         packet->RemoveHeader (ccHrd);
+=======
+        
+        // TODO remove when CSU is finished
+        packet->RemoveHeader (ccHdr);
+        CacheCastTag cct;
+        if (packet->PeekPacketTag (cct))
+          std::cerr << "HEHEHEHHEHEHEHEHEEH\n";
+        else
+          packet->AddPacketTag (cct);
+
+>>>>>>> 4f71ed81737a9149a7bc8ca99fa8743d6df0db87
         packet->AddHeader (ppp);
+
+        std::cerr << "SIZE" << packet->GetSize() << "\n";
       }
 
       m_snifferTrace (packet);

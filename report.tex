@@ -41,9 +41,9 @@
 
 \title{Implementation of CacheCast\\ in the ns-3 network simulator}
 
-\author{Rizwan~Ali~Ahmed,~
-        Kanat~Sarsekeyev,~
+\author{Kanat~Sarsekeyev,~
         Bekzahan~Kassymbekov,~
+        Rizwan~Ali~Ahmed,~
         and~Dag~Henning~Liodden~Sørbø}% <-this % stops a space
 
 % \thanks{J. Doe and J. Doe are with Anonymous University.}% <-this % stops a space
@@ -82,19 +82,74 @@ Bla bla...
 \section{ns-3}
 
 
-\section{Common data structures and classes}
+\section{Application programming interface (API)\label{api}} % HOW TO USE IT
+We have now talked about the general design of CacheCast and about the details 
+of the ns-3 network simulator. In this section we will explain how the CacheCast 
+system is used by script authors. bla bla ...
+
+
+\subsection{xxx}
+
+- first suggestion
+- second suggestion
+- what we ended up doing
+
+
+\subsection{Helpers}
+
+
+
+\section{Implementation details} % HOW IT WORKS
+In the previous section we looked at the implementation of CacheCast in ns-3 
+from the user perspective. In this section we will dig deeper into the 
+implementation details and look at the implementation from a developer 
+perspective. First we will take a birds view of the design of implementation to 
+get a general overview of how it works. Then we look at common data structures 
+used throughout the implementation. At last we elaborate on the specific 
+implementation details of each part.
+
+\subsection{General overview}
+The implementation of CacheCast in ns-3 (as in the general design of CacheCast) 
+consists of three main parts; server support, CMU and CSU. As explained in the 
+previous section, to support CacheCast, packets are sent with the 
+CacheCast::Msend() function in the ns-3 applications on the server node. Then 
+the packets traverse the network layers and is intercepted by the CacheCastNetDevice. In 
+this CacheCastNetDevice a CacheCastServerUnit is installed which adds a 
+CacheCastHeader to the packets and truncates packets with redundant payload. The 
+packets then traverse the channel and is received by a new CacheCastNetDevice 
+on the other end. In this CacheCastNetDevice a CacheStoreUnit is 
+installed which adds payload to the truncated packets and remove the 
+CacheCastHeader. The packets are then handled as normal IP packets in the node. 
+If the packet is destined for another node, it is again intercepted by a new 
+CacheCastNetDevice in which a CacheManagementUnit is installed. This unit adds 
+the CacheCastHeader to the packet and truncates packets with redundant payload. 
+The packets then traverse a new channel and is received by a new 
+CacheCastNetDevice with a CacheStoreUnit installed. This process is continued 
+for each node supporting CacheCast on the packet's path to its destination. An 
+graphical overview of this structure can be seen in figure \ref{fig_overview}.
+
+\begin{figure}[!t]
+\centering
+\includegraphics[width=3.5in]{overview}
+\caption{The structure of the CacheCast system in ns-3}
+\label{fig_overview}
+\end{figure}
+
+
+\subsection{Common data structures and classes}
 In this section we explain the common data structures used by the different 
 parts of the ns-3 implementation of CacheCast.
 
-\subsection{CacheCast header}
+\subsubsection{CacheCast header}
 The CacheCast header is represented in ns-3 as a class named CacheCastHeader. 
 This class is derived from the general ns3::Header class. The class contains the 
 same members as the header described in the design of CacheCast, namely payload 
-ID, payload size and index.
+ID, payload size and index. An overview of the %CacheCast related elements of the 
+CacheCastHeader is given in the listing below.
 
 \begin{footnotesize}
-\begin{lstlisting}[language=C]
---------------------------------------------------
+% -------------- WIDTH ----------------------------]
+\begin{lstlisting}[language=C, frame=single]
 #include "ns3/header.h"
 
 namespace ns3 {
@@ -103,12 +158,12 @@ class CacheCastHeader : public Header
 public:
   CacheCastHeader ();
   CacheCastHeader (uint32_t payloadId, 
-    uint32_t payloadSize, uint32_t index);
+    uint16_t payloadSize, uint32_t index);
   uint32_t GetPayloadId (void) const;
-  uint32_t GetPayloadSize (void) const;
+  uint16_t GetPayloadSize (void) const;
   uint32_t GetIndex (void) const;
   void SetPayloadId (uint32_t payloadId);
-  void SetPayloadSize (uint32_t payloadSize);
+  void SetPayloadSize (uint16_t payloadSize);
   void SetIndex (uint32_t index);
 
   static TypeId GetTypeId (void);
@@ -119,97 +174,164 @@ public:
   uint32_t Deserialize (Buffer::Iterator start);
 private:
   uint32_t m_payloadId;
-  uint32_t m_payloadSize;
+  uint16_t m_payloadSize;
   uint32_t m_index;
 };
 }
---------------------------------------------------
 \end{lstlisting}
 \end{footnotesize}
 
 
-\subsection{CacheCast packet tag}
+\subsubsection{CacheCast packet tag}
+In ns-3 one have the possibility to add packet tags to packets in order to store 
+information on a packet level. In the implementation of CacheCast we use packet 
+tags to store CacheCast related values when the packet is processed in a node 
+(where the CacheCast header is not present). These values are the payload ID and 
+the payload size. These are necessary for the CMU in order to uniquely identify 
+CacheCast packets and handle them correctly. 
 
-\subsection{CacheCastUnit}
+% The CacheCastTag is added by the 
+% Msend() function on the server and the CSU on the other nodes. It is removed by 
+% the CacheCastServerUnit and the CMU TODO DO WE NEED TO REMOVE THE TAG?
+
+\subsubsection{CacheCastUnit}
 The CacheCastUnit class is an abstract base class which should be derived from 
 in order to support different packet handling schemes in CacheCast. This class 
-contains only one CacheCast related function namely \texttt{virtual bool 
+contains only one CacheCast related function named \textsf{virtual bool 
 HandlePacket (Ptr<Packet> p)}. This function takes a pointer to a packet which 
-it can modify based on what the derived class is supposed to do. The derived 
-classes is supposed to override this function. There are currently three derived 
-classes from the CacheCastUnit base class; CacheCastServerUnit, CacheManagementUnit 
-and CacheStoreUnit. These classed will be explained later in this document.
+it can modify. The derived classes is supposed to override this function. There 
+are currently three derived classes from the CacheCastUnit base class; 
+CacheCastServerUnit, CacheManagementUnit and CacheStoreUnit. These classed will 
+be explained later in this document.
 
-\subsection{CacheCastNetDevice}
-In the ns-3 network simulator the abstraction of the physical and the 
-data link layer is modeled by a NetDevice. This NetDevice receives a 
-packet from the network layer, adds link layer headers, and puts the packet onto 
-the channel. Because of this design we have chosen to create a new NetDevice 
-which supports CacheCast. This NetDevice is called CacheCastNetDevice and 
-is strongly based on the PointToPointNetDevice. In the first attempt of creating 
-this NetDevice we tried to make CacheCastNetDevice a derived class of the 
-PointToPointNetDevice. This proved difficult due to the design of the 
-PointToPointNetDevice. There was no way to get to the packet after the 
-transmission queue and before it was transmitted onto the link, which is crucial 
-for the CacheCast technique. Because of this we chose to copy much of the code 
-from PointToPointNetDevice and adapt it to the CacheCast scenario. Since CacheCast is only supported on 
+\subsubsection{CacheCastNetDevice}
+In the ns-3 network simulator the abstraction of the physical and the data link 
+layer is modeled by a NetDevice. This NetDevice receives a packet from the 
+network layer, adds link layer headers, and puts the packet onto the channel. 
+Because of this design we have chosen to create a new NetDevice which supports 
+CacheCast. This NetDevice is called CacheCastNetDevice and is strongly based on 
+the PointToPointNetDevice. In the first attempt of creating this NetDevice we 
+tried to make CacheCastNetDevice a derived class of the PointToPointNetDevice. 
+This proved difficult due to the design of the PointToPointNetDevice. There was 
+no way to get to the packet after the transmission queue and before it was 
+transmitted onto the link, which is crucial for the CacheCast technique. Because 
+of this we chose to copy much of the code from PointToPointNetDevice and adapt 
+it to the CacheCast scenario. Since CacheCast is only supported on 
 point-to-point links the CacheCastNetDevice need not be generalized into 
-supporting arbitrary link level technologies.
+arbitrary link level technologies.
 
-The main idea of CacheCast is to intercept the packet before it is transmitted 
-onto the link and remove redundant payload.
+The CacheCastNetDevice is used both on the server and on nodes and it is used 
+together with the ServerUnit, the CMU and the CSU. To support these different 
+scenarios we have added a senderUnit and a receiverUnit object to the class. 
+These objects are derived from the CacheStoreUnit class so their purpose is to 
+modify packets. The main idea of CacheCast is to intercept the packets before 
+they are transmitted onto the link to remove redundant payload. In our 
+implementation this interception is done in the 
+CacheCastNetDevice::TransmitStart() function. The packets need to be intercepted 
+also on the receiver side, and this is done in CacheCastNetDevice::Receive(). In 
+these functions the HandlePacket() function of the senderUnit and receiverUnit 
+is called, respectively. So this is where the actual CacheCast packet 
+modification happens. More will be said in the following sections about how this 
+packet modification is done.
 
-In the Linux implementation the CacheCast packets is intercepted just before the 
-link layer. In our implementation in ns-3 this interception will happen in the 
-NetDevice. All NetDevices in ns-3 have a virtual function called Send(). This function is 
-called from the network layer with the packet as an argument and this is where 
-we will intercept the packet.
+In order to have a channel to connect to the new CacheCastNetDevice we had to 
+create an adapted version of the PointToPointChannel named CacheCastChannel. The 
+only reason for this class is to support the CacheCastNetDevice. No CacheCast 
+related packet handling is done in this class.
 
-\subsection{CacheCastChannel}
-
-
-
-\section{Network support}
-
-
-
-\section{Server support}
-The CacheCast system relies on CacheCast support on the server in order to 
-remove redundant payload in the network. This server support should send all 
-packets sequentially onto the link and truncate all packets beside the first 
-one. This removes redundant payload from the link and forms a packet train.
-
-In the Linux operating system this functionality is provided through a system 
-call (\texttt{msend}) and a kernel module. In the ns-3 network simulator there 
-is no abstraction of an (operating) system. Hence, this server support mechanism must 
-be handled in a different way than in the Linux operating system.
-
-The CacheCast server support consists mainly of two parts; the interface to the 
-applications and the underlying packet handling mechanisms. The implementation 
-in ns-3 closely resembles this division. The API exposed to the applications is 
-discussed in section \ref{api} and the underlying handling of 
-packets and addition of the CacheCast header is discussed in the next section.
-
-\subsection{Underlying packet handling mechanism}
-The tasks of the underlying packet handling mechanism in CacheCast is to ensure 
-that the packets are put onto the link in a tight chain and to add the CacheCast 
-header to each packet. In the Linux implementation of CacheCast this mechanism 
-is handled by a kernel module located between the network layer and the link 
-layer. 
+Now we have looked into the common data structures used in our 
+implementation. Let us in the following sections go more into detail of the 
+actual packet handling mechanisms of the CacheCast system. First we take a look 
+into the server part and then we continue with the networking part of the 
+implementation.
 
 
-CacheCastPid
+\subsection{Server support}
+The CacheCast system relies on support from the server in order to remove 
+redundant payload in the network. This server support should send all packets 
+sequentially onto the link and truncate all packets beside the first one. This 
+removes redundant payload from the link and forms a packet train.
+
+The general design of the CacheCast server support consists mainly of two parts; 
+the programming interface to the applications and the underlying packet handling 
+mechanism. The implementation in ns-3 closely resembles this division. The 
+implementation details of the API exposed to the applications is discussed in 
+the next section while the underlying handling of packets is discussed in 
+section \ref{serverunit}.
 
 
-\subsection{Application programming interface (API)\label{api}}
-
-- first suggestion
-- second suggestion
-- what we ended up doing
+\subsubsection{Details of the API implementation}
 
 
+TODO write about CacheCastPid
 
-\section{Helpers}
+
+\subsubsection{Underlying packet handling mechanism\label{serverunit}}
+The tasks of the underlying packet handling mechanism on a CacheCast supported 
+server is to ensure that the packets are put onto the link in a tight chain and 
+to add the CacheCast header to each packet. In the Linux implementation of 
+CacheCast this mechanism is handled by a kernel module located between the 
+network layer and the link layer. As previously explained we have chosen to 
+create a new CacheCastNetDevice in which we can install different packet 
+handling mechanisms. This is where the CacheCast packet modification will 
+happen.
+
+On the server an object of a class CacheCastServerUnit is added as a senderUnit 
+to each CacheCastNetDevice. 
+
+no need to cache packets in server since a simulator
+
+\begin{footnotesize}
+% -------------- WIDTH ----------------------------]
+\begin{lstlisting}[language=C, frame=single, showstringspaces=false]
+bool
+CacheCastServerUnit::HandlePacket (Ptr<Packet> p)
+{
+  NS_LOG_FUNCTION (p);
+
+  CacheCastTag tag;
+  bool hasTag = p->RemovePacketTag (tag);
+  NS_ASSERT_MSG (hasTag, "No CacheCast packet tag");
+
+  CacheCastHeader cch (tag.GetPayloadId (),
+    tag.GetPayloadSize (), 0);
+
+  /* Invalidate the current payload ID
+     after one second */
+  if (Simulator::Now ().GetSeconds () - m_timeStamp
+    > 1.0)
+  {
+    NS_LOG_DEBUG ("CacheCast server table 
+        invalidated");
+    m_invalid = true;
+    m_timeStamp = Simulator::Now ().GetSeconds ();
+  }
+
+  if (m_payloadId == tag.GetPayloadId ()
+      && !m_invalid)
+  {
+    // remove payload
+    p->RemoveAtEnd (tag.GetPayloadSize ());
+    cch.SetPayloadSize (0);
+  }
+  else
+  {
+    // new payload ID
+    m_payloadId = tag.GetPayloadId ();
+    m_invalid = false;
+  }
+
+  p->AddHeader (cch);
+
+  return true;
+}
+\end{lstlisting}
+\end{footnotesize}
+
+
+
+\subsection{Network support}
+
 
 
 \section{Evaluation}
@@ -231,12 +353,27 @@ The conclusion goes here.
 
 
 \section*{Acknowledgment}
-The authors would like to thank...
-% references section
+The authors would like to thank their always positive and helpful supervisor Piotr 
+Srebrny for useful guidelines and input in time of need.
 
 %\bibliographystyle{IEEEtran}
 % argument is your BibTeX string definitions and bibliography database(s)
 %\bibliography{IEEEabrv,../bib/paper}
+
+\section*{Contributions}
+
+\begin{tabular}{|l||p{3.4cm}|}
+\hline
+Kanat~Sarsekeyev & ...\\
+\hline
+Bekzahan~Kassymbekov & ...\\
+\hline
+Rizwan~Ali~Ahmed & ...\\
+\hline
+Dag~Henning~Liodden~Sørbø & bla bla\\
+& bla\\
+\hline
+\end{tabular}
 
 
 %%---------------------------------------------------------------------------%%

@@ -20,8 +20,7 @@ public:
   /**
    * \brief Construct a CacheCastHeader with fields set
    */
-  CacheCastHeader (uint32_t payloadId, uint32_t payloadSize,
-//       uint32_t originalSize, 
+  CacheCastHeader (uint32_t payloadId, uint16_t payloadSize,
       uint32_t index);
 
   /**
@@ -34,12 +33,7 @@ public:
   /**
    * \returns the payload size of this packet
    */
-  uint32_t GetPayloadSize (void) const;
-
-  /**
-   * \returns the original size of this packet
-   */
-//   uint32_t GetOriginalSize (void) const;
+  uint16_t GetPayloadSize (void) const;
 
   /**
    * \returns the table/cache-slot index of this packet
@@ -54,12 +48,7 @@ public:
   /**
    * \brief Set the payload size of this packet
    */
-  void SetPayloadSize (uint32_t payloadSize);
-
-  /**
-   * \brief Set the original size of this packet
-   */
-//   void SetOriginalSize (uint32_t originalSize);
+  void SetPayloadSize (uint16_t payloadSize);
 
   /**
    * \brief Set the table/cache-slot index of this packet
@@ -82,9 +71,7 @@ private:
   /**
    * The size of the payload in the packet.
    */
-  uint32_t m_payloadSize;
-
-//   uint32_t m_originalSize; //TODO remove?
+  uint16_t m_payloadSize;
 
   /**
    * The index into the CMU table and the CSU cache slot
