@@ -268,13 +268,16 @@ TODO write about CacheCastPid
 
 \subsubsection{Underlying packet handling mechanism\label{serverunit}}
 The tasks of the underlying packet handling mechanism on a CacheCast supported 
-server is to ensure that the packets are put onto the link in a tight chain and to add the CacheCast 
-header to each packet. In the Linux implementation of CacheCast this mechanism 
-is handled by a kernel module located between the network layer and the link 
-layer. As previously explained we have chosen to create a new CacheCastNetDevice in 
-which we can install different packet handling mechanisms. This is where the 
-CacheCast packet modification will happen.
+server is to ensure that the packets are put onto the link in a tight chain and 
+to add the CacheCast header to each packet. In the Linux implementation of 
+CacheCast this mechanism is handled by a kernel module located between the 
+network layer and the link layer. As previously explained we have chosen to 
+create a new CacheCastNetDevice in which we can install different packet 
+handling mechanisms. This is where the CacheCast packet modification will 
+happen.
 
+On the server an object of a class CacheCastServerUnit is added as a senderUnit 
+to each CacheCastNetDevice. 
 
 no need to cache packets in server since a simulator
 
