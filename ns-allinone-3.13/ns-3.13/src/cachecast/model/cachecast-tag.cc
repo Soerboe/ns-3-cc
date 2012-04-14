@@ -1,7 +1,10 @@
 /* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil; -*- */
 
 #include "cachecast-tag.h"
+#include <iostream>
 
+
+using namespace std;
 namespace ns3 {
 
 NS_OBJECT_ENSURE_REGISTERED (CacheCastTag);

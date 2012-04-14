@@ -41,7 +41,7 @@ CacheCastServerUnit::HandlePacket (Ptr<Packet> p)
 
   CacheCastHeader cch (tag.GetPayloadId (), tag.GetPayloadSize (), 0);
 
-  if (Simulator::Now ().GetSeconds () - m_table.timeStamp > 1.0)
+  if (Simulator::Now ().GetSeconds () - m_table.timeStamp > 100.0)
   {
     NS_LOG_DEBUG ("CacheCast server table invalidated");
     m_table.invalid = true;
