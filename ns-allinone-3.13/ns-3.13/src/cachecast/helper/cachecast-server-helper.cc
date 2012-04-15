@@ -222,11 +222,9 @@ CacheCastServerHelper::Install (Ptr<Node> server, Ptr<Node> node)
   /* Setup node */
   Ptr<CacheCastNetDevice> nodeDevice = m_deviceFactory.Create<CacheCastNetDevice> ();
   Ptr<CacheStoreUnit> csu = Create<CacheStoreUnit> ();
-  
-  // TODO Change these two
-  csu->SetSize(10);
-  // TODO 
-  csu->SetSlotSize (100);
+  csu->SetSize(1);
+  NS_ASSERT (serverDevice->GetMtu () == nodeDevice->GetMtu ());
+  csu->SetSlotSize (nodeDevice->GetMtu ());
 
   nodeDevice->AddReceiverUnit (csu);
   Ptr<Queue> nodeQueue = m_queueFactory.Create<Queue> ();

@@ -2,6 +2,7 @@
 
 #include "ns3/log.h"
 // #include "ns3/simulator.h"
+#include "ns3/uinteger.h"
 #include "cache-management-unit.h"
 
 NS_LOG_COMPONENT_DEFINE ("CacheManagementUnit");
@@ -25,6 +26,8 @@ CacheManagementUnit::SetSize (uint32_t size)
 bool
 CacheManagementUnit::HandlePacket (Ptr<Packet> p)
 {
+  NS_LOG_FUNCTION (p);
+
   NS_ASSERT_MSG (m_size > 0, "CMU's table size must be a positive integer");
   
 
@@ -39,6 +42,11 @@ CacheManagementUnit::GetTypeId (void)
   static TypeId tid = TypeId ("ns3::CacheManagementUnit")
     .SetParent<CacheCastUnit> ()
     .AddConstructor<CacheManagementUnit> ()
+    .AddAttribute ("Size",
+                   "The number of elements in the table.",
+                   UintegerValue (1000),
+                   MakeUintegerAccessor (&CacheManagementUnit::m_size),
+                   MakeUintegerChecker<uint32_t> ())
   ;
   return tid;
 }

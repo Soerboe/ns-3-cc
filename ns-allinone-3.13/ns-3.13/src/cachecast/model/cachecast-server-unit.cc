@@ -36,7 +36,8 @@ CacheCastServerUnit::HandlePacket (Ptr<Packet> p)
   NS_LOG_FUNCTION (p);
 
   CacheCastTag tag;
-  bool hasTag = p->RemovePacketTag (tag);
+  bool hasTag = p->PeekPacketTag (tag);
+//   bool hasTag = p->RemovePacketTag (tag);
   NS_ASSERT_MSG (hasTag, "No CacheCast packet tag");
 
   CacheCastHeader cch (tag.GetPayloadId (), tag.GetPayloadSize (), 0);
@@ -61,7 +62,7 @@ CacheCastServerUnit::HandlePacket (Ptr<Packet> p)
     m_table.invalid = false;
   }
 
-  p->AddHeader (cch);
+//   p->AddHeader (cch);
 
   return true;
 }

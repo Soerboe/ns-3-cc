@@ -83,8 +83,8 @@ CacheCast::Msend (Ptr<Packet> packet)
 
     // TODO check if socket's NetDevice is a CacheCastNetDevice and only add tag if it is
 
-//     Ptr<Packet> p = Copy<Packet> (packet); 
-    Ptr<Packet> p = packet->Copy (); 
+    Ptr<Packet> p = Copy<Packet> (packet); 
+//     Ptr<Packet> p = packet->Copy (); 
 
     CacheCastTag tag (payloadId, p->GetSize ());
     p->AddPacketTag (tag);        
