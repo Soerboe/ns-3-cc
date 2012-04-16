@@ -277,9 +277,8 @@ handling mechanisms. This is where the CacheCast packet modification will
 happen.
 
 On the server an object of a class CacheCastServerUnit is added as a senderUnit 
-to each CacheCastNetDevice. 
-
-no need to cache packets in server since a simulator
+to each CacheCastNetDevice. The CacheCastServerUnit::HandlePacket() function 
+does the actual packet modification and its contents is listed below.
 
 \begin{footnotesize}
 % -------------- WIDTH ----------------------------]
@@ -327,6 +326,38 @@ CacheCastServerUnit::HandlePacket (Ptr<Packet> p)
 }
 \end{lstlisting}
 \end{footnotesize}
+
+The code itself should be rather self-explanatory. First we check if the payload 
+has been in the table for 1 second, and if it has we invalidate this payload ID from the 
+table. The reason for doing this is to support wrapping of payload IDs. The 
+design of CacheCast specifies that a specific payload ID should be invalidated 
+if it has been present in a table for 1 second or more. The rest of the code 
+modifies the packet. If the packet's payload ID is not present in the table it 
+is added and no further changes are done to the packet payload. If a payload ID 
+is present in the table the payload is removed from the packet and the payload 
+size field in the CacheCastHeader is set to 0. At last the CacheCastHeader is 
+added to the packet. The HandlePacket() function returns control back to the 
+CacheCastNetDevice::TransmitStart() function which continues to transmit the 
+packet onto the link.
+
+The design of CacheCast demands that the packets forming a packet train is put 
+in tight sequential order on the link. In order to obtain a continuous packet 
+train all packets with the same payload should be transmitted in one batch onto 
+the link. In the implementation of CacheCast in Linux this is handled by a 
+separate packet queue in the CacheCast kernel module to overcome the issue of 
+the multiprocess nature of modern operating system. In ns-3 all code is executed 
+in sequential order with no interruption. Also computing time on the nodes is 
+not modeled in ns-3. Thus in our implementation we do not need to batch the 
+packets at link layer level. The batching of sockets done in the application domain is 
+sufficient enough to form continuous packet trains.
+
+
+
+only one entry in table
+
+index to 0
+
+
 
 
 
