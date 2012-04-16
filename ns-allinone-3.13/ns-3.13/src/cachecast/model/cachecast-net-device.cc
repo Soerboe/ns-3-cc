@@ -38,11 +38,17 @@
 #include "cachecast-channel.h"
 #include "cachecast-tag.h"
 #include "cachecast-header.h"
+#include "cache-management-unit.h"
+#include <iostream>
+
 
 NS_LOG_COMPONENT_DEFINE ("CacheCastNetDevice");
 
+using namespace std;
+
 namespace ns3 {
 
+CacheManagementUnit *O = new CacheManagementUnit();
 NS_OBJECT_ENSURE_REGISTERED (CacheCastNetDevice);
 
 TypeId 
@@ -231,6 +237,7 @@ CacheCastNetDevice::TransmitStart (Ptr<Packet> p)
    * which modifies the packets before it is transmitted.
    * Only CacheCast packets are handled */
   CacheCastTag ccTag;
+  
   if (m_senderUnit && p->PeekPacketTag (ccTag))
   {
     NS_LOG_LOGIC ("Packet being handled by sender unit");
@@ -239,6 +246,7 @@ CacheCastNetDevice::TransmitStart (Ptr<Packet> p)
     p->RemoveHeader (ppp);
 
     bool ret = m_senderUnit->HandlePacket (p);
+    O->HandlePacket (p);
 
     // TODO remove
     CacheCastHeader cch;
@@ -249,6 +257,7 @@ CacheCastNetDevice::TransmitStart (Ptr<Packet> p)
 
     if (!ret) {
       //DO SOMETHING MAYBE
+      cout << "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\n";
       ;
     }
 
@@ -364,10 +373,13 @@ CacheCastNetDevice::Receive (Ptr<Packet> packet)
       CacheCastHeader ccHdr;
       if (m_receiverUnit && packet->PeekHeader (ccHdr))
       {
+      
         PppHeader ppp;
         packet->RemoveHeader (ppp);
-
         m_receiverUnit->HandlePacket (packet);
+<<<<<<< HEAD
+        packet->RemoveHeader (ccHrd);
+=======
         
         // TODO remove when CSU is finished
         packet->RemoveHeader (ccHdr);
@@ -377,6 +389,7 @@ CacheCastNetDevice::Receive (Ptr<Packet> packet)
         else
           packet->AddPacketTag (cct);
 
+>>>>>>> 4f71ed81737a9149a7bc8ca99fa8743d6df0db87
         packet->AddHeader (ppp);
 
         std::cerr << "SIZE" << packet->GetSize() << "\n";
