@@ -5,7 +5,6 @@
 #include "cachecast-tag.h"
 #include "ns3/node.h"
 #include "cachecast-pid.h"
-// #include "cachecast-server-net-device.h"
 
 NS_LOG_COMPONENT_DEFINE ("CacheCast");
 
@@ -65,6 +64,10 @@ CacheCast::RemoveSocket(Ptr<Socket> socket){
 bool 
 CacheCast::Msend (Ptr<Packet> packet)
 {
+
+  // TODO vi trenger vel ikke socket_index naa siden feilhaantering skjer i Msend()
+  // og SetFailedSocket () er vel heller ikke noedvendig
+
   uint32_t socket_index = 0;
   bool successful = true;
   std::vector<Ptr <Socket> >::iterator socket;

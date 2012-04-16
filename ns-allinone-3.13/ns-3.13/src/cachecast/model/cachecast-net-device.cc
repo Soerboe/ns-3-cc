@@ -38,8 +38,12 @@
 #include "cachecast-channel.h"
 #include "cachecast-tag.h"
 #include "cachecast-header.h"
+#include <iostream>
+
 
 NS_LOG_COMPONENT_DEFINE ("CacheCastNetDevice");
+
+using namespace std;
 
 namespace ns3 {
 
@@ -245,6 +249,7 @@ CacheCastNetDevice::TransmitStart (Ptr<Packet> p)
    * Only CacheCast packets are handled */
   CacheCastTag ccTag;
 //         p->Print (std::cerr);
+  
   if (m_senderUnit && p->PeekPacketTag (ccTag))
   {
     NS_LOG_LOGIC ("CacheCast: Sender unit handles packet");
@@ -266,6 +271,7 @@ CacheCastNetDevice::TransmitStart (Ptr<Packet> p)
 
     if (!ret) {
       //DO SOMETHING MAYBE
+      cout << "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\n";
       ;
     }
 
@@ -388,16 +394,18 @@ CacheCastNetDevice::Receive (Ptr<Packet> packet)
         NS_LOG_LOGIC ("CacheCast: Receiver unit handles packet");
         m_preReceiverUnitTrace (packet);
         
+      
         PppHeader ppp;
         packet->RemoveHeader (ppp);
-
         m_receiverUnit->HandlePacket (packet);
+        
+//         packet->RemoveHeader (ccHrd);
         
         // TODO remove when CSU is finished
         
 //         if (packet->PeekHeader (cch)
 
-        packet->RemoveHeader (cch);
+//         packet->RemoveHeader (cch);
 //         CacheCastTag cct;
 //         if (packet->PeekPacketTag (cct))
 //           std::cerr << "HEHEHEHHEHEHEHEHEEH\n";
