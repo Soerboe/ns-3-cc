@@ -19,7 +19,9 @@ def build(bld):
         'model/cachecast-net-device.cc',
         'model/cachecast-server-unit.cc',
         'model/cache-management-unit.cc',
+        'model/cachecast-test-client.cc',
         'model/cachecast-test-application.cc',
+        'helper/cachecast-helper.cc',
         'helper/cachecast-server-helper.cc',
         ]
 
@@ -42,7 +44,9 @@ def build(bld):
         'model/cachecast-net-device.h',
         'model/cachecast-server-unit.h',
         'model/cache-management-unit.h',
+        'model/cachecast-test-client.h',
         'model/cachecast-test-application.h',
+        'helper/cachecast-helper.h',
         'helper/cachecast-server-helper.h',
         ]
 

@@ -33,8 +33,7 @@ public:
  
     Iterator BeginFailedSockets (void) const;
     Iterator EndFailedSockets (void) const;
-
-    
+ 
 };
 
 

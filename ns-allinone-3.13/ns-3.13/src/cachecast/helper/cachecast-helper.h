@@ -1,6 +1,6 @@
 /* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil; -*- */
-#ifndef __CACHECAST_SERVER_HELPER_H__
-#define __CACHECAST_SERVER_HELPER_H__
+#ifndef __CACHECAST_HELPER_H__
+#define __CACHECAST_HELPER_H__
 
 #include <string>
 
@@ -13,9 +13,9 @@
 
 namespace ns3 {
 
-// class Queue;
-// class NetDevice;
-// class Node;
+class Queue;
+class NetDevice;
+class Node;
 
 /**
  * \brief Build a set of CacheCastNetDevice objects
@@ -24,15 +24,15 @@ namespace ns3 {
  * PcapUserHelperForDevice and AsciiTraceUserHelperForDevice are
  * "mixins".
  */
-class CacheCastServerHelper : public PcapHelperForDevice, public AsciiTraceHelperForDevice
+class CacheCastHelper : public PcapHelperForDevice, public AsciiTraceHelperForDevice
 {
 public:
   /**
-   * Create a CacheCastServerHelper to make life easier when creating 
+   * Create a CacheCastHelper to make life easier when creating 
    * a CacheCast enabled server
    */
-  CacheCastServerHelper ();
-  virtual ~CacheCastServerHelper () {}
+  CacheCastHelper ();
+  virtual ~CacheCastHelper () {}
 
   /**
    * Each point to point net device must have a queue to pass packets through.
@@ -50,7 +50,7 @@ public:
    * \param v4 the value of the attribute to set on the queue
    *
    * Set the type of queue to create and associated to each
-   * CacheCastNetDevice created through CacheCastServerHelper::Install.
+   * CacheCastNetDevice created through CacheCastHelper::Install.
    */
   void SetQueue (std::string type,
                  std::string n1 = "", const AttributeValue &v1 = EmptyAttributeValue (),
@@ -66,7 +66,7 @@ public:
    * \param value the value of the attribute to set
    *
    * Set these attributes on each ns3::CacheCastNetDevice created
-   * by CacheCastServerHelper::Install
+   * by CacheCastHelper::Install
    */
   void SetDeviceAttribute (std::string name, const AttributeValue &value);
 
@@ -78,29 +78,26 @@ public:
    * \param value the value of the attribute to set
    *
    * Set these attribute on each ns3::CacheCastChannel created
-   * by CacheCastServerHelper::Install
+   * by CacheCastHelper::Install
    */
   void SetChannelAttribute (std::string name, const AttributeValue &value);
 
   /**
-   * This method creates a ns3::CacheCastNetDevice on the server and adds
-   * a CacheCastServerUnit to this CacheCastNetDevice,
-   * creates a ns3::CacheCastNetDevice on the node and adds a 
-   * CacheStoreUnit to this CacheCastNetDevice, and connects the 
+   * This method creates a ns3::CacheCastNetDevice and adds
+   * a CacheManagementUnit to the first node,
+   * creates a ns3::CacheCastNetDevice and adds a 
+   * CacheStoreUnit to the second node, and connects the 
    * two CacheCastNetDevices with the CacheCastChannel.
    *
    * \param server the node to install CacheCast server support onto
    * \param node a node which the server should be connected to.
    */
-  NetDeviceContainer Install (Ptr<Node> server, Ptr<Node> node);
+  NetDeviceContainer Install (Ptr<Node> n1, Ptr<Node> n2);
 
   /**
    * \param c a set of nodes
    *
-   * For the first node in the input container, we create a 
-   * ns3::CacheCastNetDevice with the requested attributes, 
-   * a queue for this ns3::NetDevice, for the second node, we create a
-   * CacheCastNetDevice, and connect these two together with a ns3::CacheCastChannel
+   * Saves you from having to get the nodes from the NodeContainer yourself.
    */
   NetDeviceContainer Install (NodeContainer c);
 
@@ -167,4 +164,3 @@ private:
 } // namespace ns3
 
 #endif /* __CACHECAST_SERVER_HELPER_H__ */
-

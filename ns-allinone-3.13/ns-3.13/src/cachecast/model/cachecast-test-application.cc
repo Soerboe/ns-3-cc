@@ -1,7 +1,7 @@
 /* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil; -*- */
 
 #include "ns3/log.h"
-#include "ns3/cachecast-module.h"
+#include "ns3/cachecast-test-application.h"
 #include "cachecast.h"
 #include "ns3/packet.h"
 #include "ns3/address.h"
@@ -68,8 +68,9 @@ CacheCastTestApplication::StartApplication (void)
 //    
 //     cc.Merge(cc2);
 
-  Ptr<Packet> packet = Create<Packet> (1472);
-  NS_LOG_INFO ("Packet size: " << packet->GetSize ());
+  Ptr<Packet> packet = Create<Packet> (1410);
+//   Ptr<Packet> packet = Create<Packet> (1472);
+//   NS_LOG_INFO ("Packet size: " << packet->GetSize ());
 
     if(!cc.Msend(packet)){
 //         CacheCast::Iterator vItr = cc.BeginFailedSockets();
@@ -80,8 +81,8 @@ CacheCastTestApplication::StartApplication (void)
 //         }    
     }
 
-  Ptr<Packet> p = Create<Packet> (1400);
-    cc2.Msend (p);
+//   Ptr<Packet> p = Create<Packet> (1400);
+//   cc2.Msend (p);
 
 //   Ptr<Packet> packet2 = Create<Packet> (900);
 //   cc.Msend (packet2);

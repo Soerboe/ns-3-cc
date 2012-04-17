@@ -1,5 +1,4 @@
 /* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil; -*- */
-
 #include "ns3/log.h"
 #include "ns3/simulator.h"
 #include "ns3/ipv4-header.h"
@@ -9,10 +8,12 @@
 #include "cachecast-header.h"
 
 NS_LOG_COMPONENT_DEFINE ("CacheManagementUnit");
+// using namespace std;
 
 namespace ns3 {
 
 NS_OBJECT_ENSURE_REGISTERED (CacheManagementUnit);
+// NS_LOG_COMPONENT_DEFINE ("FirstScriptExample");
 
 CacheManagementUnit::CacheManagementUnit ()
   : m_size (0),
@@ -20,6 +21,7 @@ CacheManagementUnit::CacheManagementUnit ()
 {
   NS_LOG_FUNCTION_NOARGS ();
 }
+/* ------------------------------------------------------- */
 
 // CacheManagementUnit::~CacheManagementUnit ()
 // {
@@ -31,6 +33,7 @@ void
 CacheManagementUnit::SetSize (uint32_t size)
 {
   m_size = size;
+  configureTable();
 }
 
 bool
@@ -75,11 +78,22 @@ CacheManagementUnit::HandlePacket (Ptr<Packet> p)
     m_tableIdToIndex[id] = m_currIndex;
     cch.SetIndex (m_currIndex);
     m_currIndex = (m_currIndex + 1) % m_size;
+
   }
 
   p->AddHeader (cch);
 
   return true;
+}
+
+uint32_t CacheManagementUnit::searchPayloadID( uint32_t ID )
+{
+  for( uint32_t i =0; i < m_size; i++ )
+  {
+    if(table[i].payloadID == ID)
+      return i;
+  }
+  return 500;
 }
 
 TypeId
@@ -88,6 +102,11 @@ CacheManagementUnit::GetTypeId (void)
   static TypeId tid = TypeId ("ns3::CacheManagementUnit")
     .SetParent<CacheCastUnit> ()
     .AddConstructor<CacheManagementUnit> ()
+    .AddAttribute ("Size",
+                   "The number of elements in the table.",
+                   UintegerValue (1000),
+                   MakeUintegerAccessor (&CacheManagementUnit::m_size),
+                   MakeUintegerChecker<uint32_t> ())
   ;
   return tid;
 }

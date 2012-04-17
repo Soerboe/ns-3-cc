@@ -5,7 +5,6 @@
 #include "cachecast-tag.h"
 #include "ns3/node.h"
 #include "cachecast-pid.h"
-// #include "cachecast-server-net-device.h"
 
 NS_LOG_COMPONENT_DEFINE ("CacheCast");
 
@@ -14,7 +13,7 @@ NS_OBJECT_ENSURE_REGISTERED (CacheCast);
 
 CacheCast::CacheCast (void)
 {
-  Packet::EnablePrinting ();
+//   Packet::EnablePrinting ();
 }
 
 CacheCast::Iterator 
@@ -65,6 +64,10 @@ CacheCast::RemoveSocket(Ptr<Socket> socket){
 bool 
 CacheCast::Msend (Ptr<Packet> packet)
 {
+
+  // TODO vi trenger vel ikke socket_index naa siden feilhaantering skjer i Msend()
+  // og SetFailedSocket () er vel heller ikke noedvendig
+
   uint32_t socket_index = 0;
   bool successful = true;
   std::vector<Ptr <Socket> >::iterator socket;
@@ -80,11 +83,14 @@ CacheCast::Msend (Ptr<Packet> packet)
   {        
     // if DCCP gets supported handle it also
     NS_ASSERT_MSG ((*socket)->GetSocketType () == Socket::NS3_SOCK_DGRAM, "CacheCast supports only UDP sockets");
-
+    
     // TODO check if socket's NetDevice is a CacheCastNetDevice and only add tag if it is
 
+    /*Ptr<NetDevice> net_device = (*socket)->GetBoundNetDevice ();
+    (*net_device)->getTypeID() == TypeId ("ns3::CacheCastNetDevice"); */
 //     Ptr<Packet> p = Copy<Packet> (packet); 
     Ptr<Packet> p = packet->Copy (); 
+
 
     CacheCastTag tag (payloadId, p->GetSize ());
     p->AddPacketTag (tag);        

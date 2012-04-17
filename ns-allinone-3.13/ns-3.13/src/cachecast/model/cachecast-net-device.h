@@ -234,7 +234,41 @@ private:
    * been received from the channel */
   Ptr<CacheCastUnit> m_receiverUnit;
 
-  // TODO add relevant trace sources
+  /**
+   * A trace source that fires before a packet is handled by 
+   * the sender unit. This of cource happens only if a packet is
+   * a CacheCast packet.
+   *
+   * \see class CallBackTraceSource
+   */
+  TracedCallback<Ptr<const Packet> > m_preSenderUnitTrace;
+
+  /**
+   * A trace source that fires after a packet has been handled by 
+   * the sender unit. This of cource happens only if a packet is
+   * a CacheCast packet.
+   *
+   * \see class CallBackTraceSource
+   */
+  TracedCallback<Ptr<const Packet> > m_postSenderUnitTrace;
+
+  /**
+   * A trace source that fires before a packet is handled by 
+   * the receiver unit. This of cource happens only if a packet is
+   * a CacheCast packet.
+   *
+   * \see class CallBackTraceSource
+   */
+  TracedCallback<Ptr<const Packet> > m_preReceiverUnitTrace;
+
+  /**
+   * A trace source that fires after a packet has been handled by 
+   * the receiver unit. This of cource happens only if a packet is
+   * a CacheCast packet.
+   *
+   * \see class CallBackTraceSource
+   */
+  TracedCallback<Ptr<const Packet> > m_postReceiverUnitTrace;
 
   /* ----------------------------------------------------- */
 
