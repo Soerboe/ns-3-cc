@@ -60,7 +60,7 @@
 
 
 \begin{abstract}
-The abstract goes here.
+Na na na na na na na na na na... BÆÆÆTMÆÆÆÆn!!!!
 \end{abstract}
 
 
@@ -70,9 +70,7 @@ The abstract goes here.
 
 
 \section{Introduction}
-\IEEEPARstart{T}{he} goal of this project...
-
-Bla bla... 
+\IEEEPARstart{T}{he} goal of this project... Bla bla... 
 
 
 
@@ -80,7 +78,25 @@ Bla bla...
 
 
 \section{ns-3}
+The ns-3 simulator is a discrete-event network simulator. It is an open-source project written in C++. ns-2 is a version prior to ns-3, which is a new simulator that does not support the ns-2 APIs. Some models from ns-2 have already been ported from ns-2 to ns-3, and some has not yet been implemented in ns-3.
 
+\subsection*{Abstractions}
+Before we start explaining the implementation of CacheCast in ns-3, it is important to understand abstractions and terms that are used in ns-3
+
+\subsubsection{Node}
+In ns-3 devices like host and end-user are represented as abstractions of nodes by the class \texttt{Node}. This class provides management of how these devices will be represented in simulations. 
+
+\subsubsection{Application}
+Application is abstractions of user programs that are suppose to produce activity on nodes to be simulated. This is represented by the class \texttt{Application}, which provides methods for managing the representations of applications in simulations.
+
+\subsubsection{Channel}
+In ns-3, each Node are connected by a connection that are represented by a communication channel. This abstraction is represented by class \texttt{Channel}, which provides methods for managing communication subnetwork objects and connecting nodes to them.
+
+\subsubsection{NetDevice}
+Net device abstraction covers both the software driver and the simulated hardware. A net device is  more or less "installed" in a Node in order to enable the Node to communicate with other Nodes in the simulation via Channels. Node may be connected to more than one Channel via multiple NetDevices. This abstraction is represented by class \texttt{NetDevice} which provides management of connections to Node and Channel.
+
+\subsubsection{Topylogy Helpers}
+In a simulated network, connections between Nodes, NetDevices and Channels needs to be arranged. NetDevices needs to be attached on Nodes, Node protocol-stack needs to be configured and a communication channels need to be defined between NetDevices and so on. Topology helpers are used to arrange these attachments as easy as possible on a large scale.
 
 \section{Application programming interface (API)\label{api}} % HOW TO USE IT
 We have now talked about the general design of CacheCast and about the details 
@@ -88,12 +104,85 @@ of the ns-3 network simulator. In this section we will explain how the CacheCast
 system is used by script authors. bla bla ...
 
 
-\subsection{xxx}
+\subsection{Services provided to applications}
+Since end-to-end cachecast connections are handled by different sockets, the send procedure requires a sequence of send-requests (corresponding to each socket) to transmit packets to all client. A multiple-send-request from application layer requires a container of sockets, so the application can send duplicated packets through / to all sockets in the container. 
 
-- first suggestion
-- second suggestion
-- what we ended up doing
+Since a such socket container is not supported by transport layer and nor a part of a application-layer, we chose to implement a CacheCast Application Programming Interface in the class \texttt{CacheCast}. This interface will not only support the socket container, but also systemcall \texttt{Msend()} would be provided to the application. This is much more practical than having a static systemcall called by the application.
 
+\begin{footnotesize}
+\begin{lstlisting}[language=C]
+--------------------------------------------------
+std::vector <Ptr <Socket> > m_sockets; 
+std::vector <Ptr <Socket> > m_failed;
+--------------------------------------------------
+\end{lstlisting}
+\end{footnotesize}
+
+The socketcontainer itself is implemented as a vector of sockets (\texttt{m\_sockets}), which contains sockets added by application. In addition to vector \texttt{m\_sockets} we chose to have another vector \texttt{m\_failed} to provide the application the knowledge of sockets that failed during the msend procedure.
+
+\begin{footnotesize}
+\begin{lstlisting}[language=C]
+--------------------------------------------------
+void AddSocket(Ptr<Socket> socket);
+void RemoveSocket(Ptr<Socket> socket);
+    
+void Merge(CacheCast cc);
+   
+Iterator Begin (void) const;
+Iterator End (void) const;
+ 
+Iterator BeginFailedSockets (void) const;
+Iterator EndFailedSockets (void) const;
+
+bool Msend(Ptr<Packet> packet);
+--------------------------------------------------
+\end{lstlisting}
+\end{footnotesize}
+In order to maintain the container of sockets, some facilities are provided to the application. It is necessary for the application to add or remove sockets in the container. And the possibility to merge two or more socketcontainers might also become handy.
+
+\begin{footnotesize}
+\begin{lstlisting}[language=C]
+--------------------------------------------------
+std::vector<Address>::const_iterator it;
+
+CacheCast cc;
+
+for (it = m_address.begin();
+it < m_address.end(); ++it)
+{
+  Ptr<Socket> socket = Socket::CreateSocket 
+  (GetNode (), TypeId::LookupByName 
+  ("ns3::UdpSocketFactory"));
+  socket->Bind();
+  socket->Connect (*it);
+  cc.AddSocket (socket);
+}
+for (it = m_address.begin();
+ it < m_address.end(); ++it) 
+{
+  Ptr<Socket> socket = Socket::CreateSocket 
+  (GetNode (), TypeId::LookupByName 
+  ("ns3::UdpSocketFactory"));
+  socket->Bind();
+  socket->Connect (*it);
+  cc2.AddSocket (socket);
+}
+
+cc.Merge(cc2);
+
+Ptr<Packet> packet = Create<Packet> (1472);
+
+if(!cc.Msend(packet)){
+  CacheCast::Iterator vItr = cc.BeginFailedSockets();
+  while ( vItr != cc.EndFailedSockets() )
+  {
+    cc.RemoveSocket( (*vItr) );
+    vItr++;
+  }    
+}
+--------------------------------------------------
+\end{lstlisting}
+\end{footnotesize}
 
 \subsection{Helpers}
 
@@ -265,6 +354,50 @@ section \ref{serverunit}.
 
 TODO write about CacheCastPid
 
+\begin{footnotesize}
+% -------------- WIDTH ----------------------------]
+\begin{lstlisting}[language=C, frame=single]
+bool 
+CacheCast::Msend (Ptr<Packet> packet)
+{
+
+  bool successful = true;
+  std::vector<Ptr <Socket> >::iterator socket;
+
+  if (m_sockets.size() == 0)
+    return true;
+
+  Ptr<CacheCastPid> pid = m_sockets[0]->GetNode ()->GetObject<CacheCastPid> ();
+  
+  NS_ASSERT_MSG (pid, 
+  "A CacheCast server must have a CacheCastPid object");
+  
+  uint32_t payloadId = pid->CalculateNewPayloadId ();
+
+  for(socket = m_sockets.begin(); 
+  socket != m_sockets.end(); ++socket)
+  {        
+    // if DCCP gets supported handle it also
+    NS_ASSERT_MSG ((*socket)->GetSocketType () == Socket::NS3_SOCK_DGRAM,
+    "CacheCast supports only UDP sockets");
+    
+    Ptr<Packet> p = packet->Copy (); 
+
+    CacheCastTag tag (payloadId, p->GetSize ());
+    p->AddPacketTag (tag);        
+
+    if((*socket)->Send(p) < 0)
+    {
+      successful = false;
+      SetFailedSocket (socket_index);
+    }
+  }
+
+  return successful; 
+}
+
+\end{lstlisting}
+\end{footnotesize}
 
 \subsubsection{Underlying packet handling mechanism\label{serverunit}}
 The tasks of the underlying packet handling mechanism on a CacheCast supported 
