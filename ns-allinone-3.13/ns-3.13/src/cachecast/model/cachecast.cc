@@ -85,10 +85,12 @@ CacheCast::Msend (Ptr<Packet> packet)
     NS_ASSERT_MSG ((*socket)->GetSocketType () == Socket::NS3_SOCK_DGRAM, "CacheCast supports only UDP sockets");
     
     // TODO check if socket's NetDevice is a CacheCastNetDevice and only add tag if it is
+
     /*Ptr<NetDevice> net_device = (*socket)->GetBoundNetDevice ();
     (*net_device)->getTypeID() == TypeId ("ns3::CacheCastNetDevice"); */
 //     Ptr<Packet> p = Copy<Packet> (packet); 
     Ptr<Packet> p = packet->Copy (); 
+
 
     CacheCastTag tag (payloadId, p->GetSize ());
     p->AddPacketTag (tag);        

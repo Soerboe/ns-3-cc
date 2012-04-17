@@ -28,6 +28,13 @@ using namespace ns3;
 
 #define PORT 9
 
+static void
+PreCacheCast (Ptr<OutputStreamWrapper> stream, Ptr<const Packet> p)
+{
+  *stream->GetStream () << Simulator::Now ().GetSeconds () << "\t" 
+    << p->GetSize () << "\t" << p << std::endl;
+}
+
 int 
 main (int argc, char *argv[])
 {
@@ -35,7 +42,10 @@ main (int argc, char *argv[])
   LogComponentEnable ("CacheCastServerUnit", LOG_LEVEL_ALL);
   LogComponentEnable ("CacheCastPid", LOG_LEVEL_ALL);
   LogComponentEnable ("UdpEchoServerApplication", LOG_LEVEL_INFO);
-  LogComponentEnable ("CacheCastNetDevice", LOG_LEVEL_ALL);
+  LogComponentEnable ("CacheCastNetDevice", LOG_LEVEL_INFO);
+//   LogComponentEnable ("CacheStoreUnit", LOG_LEVEL_ALL);
+//   LogComponentEnable ("CacheManagementUnit", LOG_LEVEL_ALL);
+  LogComponentEnable ("CacheCastTestClient", LOG_LEVEL_INFO);
 
   NodeContainer nodes;
   nodes.Create (5);
@@ -80,39 +90,59 @@ main (int argc, char *argv[])
   address.SetBase ("10.1.4.0", "255.255.255.0");
   Ipv4InterfaceContainer interfaces4 = address.Assign (devices4);
 
-  UdpEchoServerHelper echoServer1 (PORT);
-  ApplicationContainer serverApps1 = echoServer1.Install (nodes.Get (3));
-  serverApps1.Start (Seconds (1.0));
-  serverApps1.Stop (Seconds (10.0));
+//   UdpEchoServerHelper echoServer1 (PORT);
+//   ApplicationContainer serverApps1 = echoServer1.Install (nodes.Get (3));
+//   serverApps1.Start (Seconds (1.0));
+//   serverApps1.Stop (Seconds (10.0));
+// 
+//   UdpEchoServerHelper echoServer2 (PORT);
+//   ApplicationContainer serverApps2 = echoServer2.Install (nodes.Get (4));
+//   serverApps2.Start (Seconds (1.0));
+//   serverApps2.Stop (Seconds (10.0));
 
-  UdpEchoServerHelper echoServer2 (PORT);
-  ApplicationContainer serverApps2 = echoServer2.Install (nodes.Get (4));
-  serverApps2.Start (Seconds (1.0));
-  serverApps2.Stop (Seconds (10.0));
+  /* Set up client applications */
+  Ptr<CacheCastTestClient> client1 = Create<CacheCastTestClient> ();
+  client1->SetPort (PORT);
+  client1->SetStartTime (Seconds (1.0));
+  client1->SetStopTime (Seconds (10.0));
+  nodes.Get(3)->AddApplication (client1);
 
+  Ptr<CacheCastTestClient> client2 = Create<CacheCastTestClient> ();
+  client2->SetPort (PORT);
+  client2->SetStartTime (Seconds (1.0));
+  client2->SetStopTime (Seconds (10.0));
+  nodes.Get(4)->AddApplication (client2);
 
+  /* Set up server application */
   Ptr<CacheCastTestApplication> app = Create<CacheCastTestApplication> ();
   Address addr1 (InetSocketAddress (interfaces3.GetAddress (1), PORT));
   Address addr2 (InetSocketAddress (interfaces4.GetAddress (1), PORT));
   app->AddAddress (addr1);
   app->AddAddress (addr2);
-//   app->AddAddress (addr2);
-//   app->AddAddress (addr1);
-//   app->AddAddress (addr1);
-//   app->AddAddress (addr1);
-//   app->AddAddress (addr1);
+  app->AddAddress (addr2);
+  app->AddAddress (addr1);
+  app->AddAddress (addr1);
+  app->AddAddress (addr1);
+  app->AddAddress (addr1);
   nodes.Get (0)->AddApplication (app);
   app->SetStartTime (Seconds (2.0));
   app->SetStopTime (Seconds (10.0));
 
+  Packet::EnablePrinting();
   Packet::EnableChecking();
 
 //   ccHelper.EnablePcapAll ("cc");
   Ipv4GlobalRoutingHelper::PopulateRoutingTables ();
 
+  AsciiTraceHelper asciiTraceHelper;
+  Ptr<OutputStreamWrapper> stream = asciiTraceHelper.CreateFileStream ("cachecast.txt");
+  devices1.Get (1)->TraceConnectWithoutContext ("CcPreRecv", MakeBoundCallback (&PreCacheCast, stream));
+
+  Ptr<OutputStreamWrapper> stream2 = asciiTraceHelper.CreateFileStream ("cachecast2.txt");
+  devices3.Get (1)->TraceConnectWithoutContext ("CcPreRecv", MakeBoundCallback (&PreCacheCast, stream2));
+
   Simulator::Run ();
   Simulator::Destroy ();
   return 0;
 }
-
 

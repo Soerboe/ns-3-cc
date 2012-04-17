@@ -38,7 +38,6 @@
 #include "cachecast-channel.h"
 #include "cachecast-tag.h"
 #include "cachecast-header.h"
-#include "cache-management-unit.h"
 #include <iostream>
 
 
@@ -48,7 +47,6 @@ using namespace std;
 
 namespace ns3 {
 
-CacheManagementUnit *O = new CacheManagementUnit();
 NS_OBJECT_ENSURE_REGISTERED (CacheCastNetDevice);
 
 TypeId 
@@ -154,6 +152,19 @@ CacheCastNetDevice::GetTypeId (void)
     .AddTraceSource ("PromiscSniffer", 
                      "Trace source simulating a promiscuous packet sniffer attached to the device",
                      MakeTraceSourceAccessor (&CacheCastNetDevice::m_promiscSnifferTrace))
+
+    .AddTraceSource ("CcPreSend",
+                     "Trace source being fired before a CacheCast packet is handled by the sender unit.",
+                     MakeTraceSourceAccessor (&CacheCastNetDevice::m_preSenderUnitTrace))
+    .AddTraceSource ("CcPostSend",
+                     "Trace source being fired after a CacheCast packet has been handled by the sender unit.",
+                     MakeTraceSourceAccessor (&CacheCastNetDevice::m_postSenderUnitTrace))
+    .AddTraceSource ("CcPreRecv",
+                     "Trace source being fired before a CacheCast packet is handled by the receiver unit.",
+                     MakeTraceSourceAccessor (&CacheCastNetDevice::m_preReceiverUnitTrace))
+    .AddTraceSource ("CcPostRecv",
+                     "Trace source being fired after a CacheCast packet has been handled by the receiver unit.",
+                     MakeTraceSourceAccessor (&CacheCastNetDevice::m_postReceiverUnitTrace))
   ;
   return tid;
 }
@@ -237,21 +248,24 @@ CacheCastNetDevice::TransmitStart (Ptr<Packet> p)
    * which modifies the packets before it is transmitted.
    * Only CacheCast packets are handled */
   CacheCastTag ccTag;
+//         p->Print (std::cerr);
   
   if (m_senderUnit && p->PeekPacketTag (ccTag))
   {
-    NS_LOG_LOGIC ("Packet being handled by sender unit");
+    NS_LOG_LOGIC ("CacheCast: Sender unit handles packet");
+    m_preSenderUnitTrace (p);
 
     PppHeader ppp;
     p->RemoveHeader (ppp);
 
     bool ret = m_senderUnit->HandlePacket (p);
-    O->HandlePacket (p);
 
     // TODO remove
     CacheCastHeader cch;
-    if (p->PeekHeader (cch) == 0)
+//     if (p->PeekHeader (cch) == 0) {
       p->AddHeader (cch);
+//       std::cerr << "DDDDDDDDDDDDDDDDDDDDDDDDDDDD\n";
+//     }
 
     p->AddHeader (ppp);
 
@@ -261,7 +275,10 @@ CacheCastNetDevice::TransmitStart (Ptr<Packet> p)
       ;
     }
 
+    m_postSenderUnitTrace (p);
   }
+//         p->Print (std::cerr);
+
 
   m_txMachineState = BUSY;
   m_currentPkt = p;
@@ -370,30 +387,39 @@ CacheCastNetDevice::Receive (Ptr<Packet> packet)
       /* Here we call the HandlePacket() function of the receiver unit
        * which modifies the packets when they are received.
        * Only CacheCast packets are handled */
-      CacheCastHeader ccHdr;
-      if (m_receiverUnit && packet->PeekHeader (ccHdr))
+      CacheCastHeader cch;
+//         packet->Print (std::cerr);
+      if (m_receiverUnit && packet->PeekHeader (cch))
       {
+        NS_LOG_LOGIC ("CacheCast: Receiver unit handles packet");
+        m_preReceiverUnitTrace (packet);
+        
       
         PppHeader ppp;
         packet->RemoveHeader (ppp);
         m_receiverUnit->HandlePacket (packet);
-<<<<<<< HEAD
-        packet->RemoveHeader (ccHrd);
-=======
+        
+//         packet->RemoveHeader (ccHrd);
         
         // TODO remove when CSU is finished
-        packet->RemoveHeader (ccHdr);
-        CacheCastTag cct;
-        if (packet->PeekPacketTag (cct))
-          std::cerr << "HEHEHEHHEHEHEHEHEEH\n";
-        else
-          packet->AddPacketTag (cct);
+        
+//         if (packet->PeekHeader (cch)
 
->>>>>>> 4f71ed81737a9149a7bc8ca99fa8743d6df0db87
+//         packet->RemoveHeader (cch);
+//         CacheCastTag cct;
+//         if (packet->PeekPacketTag (cct))
+//           std::cerr << "HEHEHEHHEHEHEHEHEEH\n";
+//         else
+//           packet->AddPacketTag (cct);
+
         packet->AddHeader (ppp);
 
-        std::cerr << "SIZE" << packet->GetSize() << "\n";
+//         std::cerr << "SIZE" << packet->GetSize() << "\n";
+
+        m_postReceiverUnitTrace (packet);
       }
+
+//         packet->Print (std::cerr);
 
       m_snifferTrace (packet);
       m_promiscSnifferTrace (packet);
