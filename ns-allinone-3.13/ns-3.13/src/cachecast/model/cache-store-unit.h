@@ -46,6 +46,20 @@ private:
   
   /* Size of the CSU cache's slots */
   uint32_t m_slotSize;
+
+  struct TableItem
+  {
+    uint32_t id;
+    uint32_t size;
+
+    TableItem (uint32_t _id, uint32_t _size)
+    {
+      id = _id;
+      size = _size;
+    }
+  };
+  std::map<uint32_t, TableItem> m_tableIndexToItem;
+
 };
 
 } // namespace ns3

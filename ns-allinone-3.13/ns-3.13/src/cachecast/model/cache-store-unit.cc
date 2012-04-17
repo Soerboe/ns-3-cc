@@ -32,7 +32,41 @@ bool
 CacheStoreUnit::HandlePacket (Ptr<Packet> p)
 {
   NS_LOG_FUNCTION (p);
+  CacheCastHeader cch;
+  p->RemoveHeader(cch);  
   
+  cch->GetIndex();
+  cch->GetPayloadSize();
+  
+  
+  if( cch->GetPayloadSize()>m_size)
+    return false;
+
+   /* Get IP address of packet */
+  Ipv4Header ipHdr;
+  uint32_t ipRead = p->PeekHeader (ipHdr);
+  // Handle IPv6?
+  NS_ASSERT (ipRead);
+  uint32_t addr = ipHdr.GetSource ().Get ();
+
+  /* Construct universally unique id */
+  uint64_t id = ((uint64_t) addr << 32) | cch->GetPayloadId();
+
+  TableItem item ( cch->GetPayloadId(), cch->GetPayloadSize(), false);
+  m_tableIndexToItem.insert(item);
+
+  if(cch->GetPayloadSize() == 0)
+  {
+     
+  }else
+  {
+  
+  }
+  
+  /*
+  CacheCastTag cct
+  p->AddPacketTag(cct);   
+  */
   return true;
 }
 
