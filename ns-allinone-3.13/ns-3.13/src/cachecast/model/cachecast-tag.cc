@@ -2,7 +2,6 @@
 
 #include "cachecast-tag.h"
 
-
 namespace ns3 {
 
 NS_OBJECT_ENSURE_REGISTERED (CacheCastTag);

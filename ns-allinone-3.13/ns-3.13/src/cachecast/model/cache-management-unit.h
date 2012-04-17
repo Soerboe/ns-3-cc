@@ -6,7 +6,6 @@
 #include "ns3/object.h"
 #include "ns3/packet.h"
 #include "cachecast-unit.h"
-#include "cachecast-tag.h"
 
 namespace ns3 {
 
@@ -14,25 +13,9 @@ namespace ns3 {
  * /brief Cache Management Unit
  *
  */
- 
- struct bucket
-{
-	uint32_t payloadSize;
-	uint32_t payloadID;
-	uint32_t index;
-};
-
 class CacheManagementUnit : public CacheCastUnit
 {
 public:
-
-    bucket *table;
-    CacheCastTag *tag_obj;	
-	void configureTable();
-	uint32_t searchPayloadID( uint32_t );
-	
-	
-	
   /**
    * /brief Construct an empty CacheManagementUnit
    */
