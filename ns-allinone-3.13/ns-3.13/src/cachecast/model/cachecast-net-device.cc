@@ -248,7 +248,7 @@ CacheCastNetDevice::TransmitStart (Ptr<Packet> p)
    * which modifies the packets before it is transmitted.
    * Only CacheCast packets are handled */
   CacheCastTag ccTag;
-//         p->Print (std::cerr);
+        p->Print (std::cerr);
   
   if (m_senderUnit && p->PeekPacketTag (ccTag))
   {
@@ -258,12 +258,14 @@ CacheCastNetDevice::TransmitStart (Ptr<Packet> p)
     PppHeader ppp;
     p->RemoveHeader (ppp);
 
+
     bool ret = m_senderUnit->HandlePacket (p);
 
+    std::cerr << "HEIHEO\n";
     // TODO remove
-    CacheCastHeader cch;
+//     CacheCastHeader cch;
 //     if (p->PeekHeader (cch) == 0) {
-      p->AddHeader (cch);
+//       p->AddHeader (cch);
 //       std::cerr << "DDDDDDDDDDDDDDDDDDDDDDDDDDDD\n";
 //     }
 
@@ -393,10 +395,10 @@ CacheCastNetDevice::Receive (Ptr<Packet> packet)
       {
         NS_LOG_LOGIC ("CacheCast: Receiver unit handles packet");
         m_preReceiverUnitTrace (packet);
-        
       
         PppHeader ppp;
         packet->RemoveHeader (ppp);
+
         m_receiverUnit->HandlePacket (packet);
         
 //         packet->RemoveHeader (ccHrd);

@@ -81,8 +81,8 @@ CacheCastTestApplication::StartApplication (void)
 //         }    
     }
 
-  Ptr<Packet> p = Create<Packet> (1400);
-  cc2.Msend (p);
+//   Ptr<Packet> p = Create<Packet> (1400);
+//   cc2.Msend (p);
 
 //   Ptr<Packet> packet2 = Create<Packet> (900);
 //   cc.Msend (packet2);

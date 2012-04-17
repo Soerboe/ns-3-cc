@@ -13,7 +13,7 @@ NS_OBJECT_ENSURE_REGISTERED (CacheCast);
 
 CacheCast::CacheCast (void)
 {
-  Packet::EnablePrinting ();
+//   Packet::EnablePrinting ();
 }
 
 CacheCast::Iterator 

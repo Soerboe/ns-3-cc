@@ -44,12 +44,8 @@ CacheCastServerUnit::HandlePacket (Ptr<Packet> p)
 
   CacheCastHeader cch (tag.GetPayloadId (), tag.GetPayloadSize (), 0);
 
-<<<<<<< HEAD
-  if (Simulator::Now ().GetSeconds () - m_table.timeStamp > 100.0)
-=======
   /* Invalidate the current payload ID after one second */
   if (Simulator::Now ().GetSeconds () - m_timeStamp > 1.0)
->>>>>>> 4f71ed81737a9149a7bc8ca99fa8743d6df0db87
   {
     NS_LOG_DEBUG ("CacheCast server table invalidated");
     m_invalid = true;
@@ -69,7 +65,7 @@ CacheCastServerUnit::HandlePacket (Ptr<Packet> p)
     m_invalid = false;
   }
 
-//   p->AddHeader (cch);
+  p->AddHeader (cch);
 
   return true;
 }

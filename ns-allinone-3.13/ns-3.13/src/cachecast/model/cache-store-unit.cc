@@ -59,27 +59,32 @@ CacheStoreUnit::HandlePacket (Ptr<Packet> p)
   uint32_t location = searchPayloadID( ccHrd.GetPayloadId() );
   if ( location != 500 )
   {
+    std::cerr << "FOUND\n";
     ccHrd.SetIndex( table[ location ].index );
     p->AddPaddingAtEnd( table[ location ].payloadSize );
     
   }
   else
   {
-    uint32_t hashValue = ccHrd.GetPayloadSize() % 7;
+    std::cerr << "NOOOOT FOUND\n";
+
+    uint32_t hashValue = ccHrd.GetPayloadId() % 7;
     table[ hashValue ].index = hashValue;
     table[ hashValue ].payloadID = ccHrd.GetPayloadId();
     table[ hashValue ].payloadSize = ccHrd.GetPayloadSize();
     ccHrd.SetIndex( table[ hashValue ].index );
-    setPayloadInSlots( table[ hashValue ].payloadSize , table[ hashValue ].index); // sets the payload in the slots.
+//     setPayloadInSlots( table[ hashValue ].payloadSize , table[ hashValue ].index); // sets the payload in the slots.
   }
 
-  p->AddHeader (ccHrd);
+//   p->AddHeader (ccHrd);
   return true;
 }
 
 
 void CacheStoreUnit::setPayloadInSlots( uint32_t s, uint32_t index )
 {
+  NS_LOG_FUNCTION (s << index);
+
   uint32_t size = s;
   for ( int i=size; i >= 0; i -= m_slotSize )
   {
@@ -97,6 +102,8 @@ void CacheStoreUnit::setPayloadInSlots( uint32_t s, uint32_t index )
 
 uint32_t CacheStoreUnit::searchPayloadID( uint32_t ID )
 {
+  NS_LOG_FUNCTION (ID);
+
   for( uint32_t i =0; i < m_size; i++ )
   {
     if(table[i].payloadID == ID)

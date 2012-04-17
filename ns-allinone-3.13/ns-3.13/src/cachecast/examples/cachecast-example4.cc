@@ -42,9 +42,9 @@ main (int argc, char *argv[])
   LogComponentEnable ("CacheCastServerUnit", LOG_LEVEL_ALL);
   LogComponentEnable ("CacheCastPid", LOG_LEVEL_ALL);
   LogComponentEnable ("UdpEchoServerApplication", LOG_LEVEL_INFO);
-  LogComponentEnable ("CacheCastNetDevice", LOG_LEVEL_INFO);
-//   LogComponentEnable ("CacheStoreUnit", LOG_LEVEL_ALL);
-//   LogComponentEnable ("CacheManagementUnit", LOG_LEVEL_ALL);
+  LogComponentEnable ("CacheCastNetDevice", LOG_LEVEL_ALL);
+  LogComponentEnable ("CacheStoreUnit", LOG_LEVEL_ALL);
+  LogComponentEnable ("CacheManagementUnit", LOG_LEVEL_ALL);
   LogComponentEnable ("CacheCastTestClient", LOG_LEVEL_INFO);
 
   NodeContainer nodes;
@@ -118,20 +118,20 @@ main (int argc, char *argv[])
   Address addr1 (InetSocketAddress (interfaces3.GetAddress (1), PORT));
   Address addr2 (InetSocketAddress (interfaces4.GetAddress (1), PORT));
   app->AddAddress (addr1);
-  app->AddAddress (addr2);
-  app->AddAddress (addr2);
+//   app->AddAddress (addr2);
+//   app->AddAddress (addr2);
   app->AddAddress (addr1);
-  app->AddAddress (addr1);
-  app->AddAddress (addr1);
-  app->AddAddress (addr1);
+//   app->AddAddress (addr1);
+//   app->AddAddress (addr1);
+//   app->AddAddress (addr1);
   nodes.Get (0)->AddApplication (app);
   app->SetStartTime (Seconds (2.0));
   app->SetStopTime (Seconds (10.0));
 
-  Packet::EnablePrinting();
-  Packet::EnableChecking();
+//   Packet::EnablePrinting();
+//   Packet::EnableChecking();
 
-//   ccHelper.EnablePcapAll ("cc");
+  ccHelper.EnablePcapAll ("cc");
   Ipv4GlobalRoutingHelper::PopulateRoutingTables ();
 
   AsciiTraceHelper asciiTraceHelper;
@@ -139,7 +139,13 @@ main (int argc, char *argv[])
   devices1.Get (1)->TraceConnectWithoutContext ("CcPreRecv", MakeBoundCallback (&PreCacheCast, stream));
 
   Ptr<OutputStreamWrapper> stream2 = asciiTraceHelper.CreateFileStream ("cachecast2.txt");
-  devices3.Get (1)->TraceConnectWithoutContext ("CcPreRecv", MakeBoundCallback (&PreCacheCast, stream2));
+  devices1.Get (1)->TraceConnectWithoutContext ("CcPostRecv", MakeBoundCallback (&PreCacheCast, stream2));
+
+  Ptr<OutputStreamWrapper> stream3 = asciiTraceHelper.CreateFileStream ("cachecast3.txt");
+  devices3.Get (0)->TraceConnectWithoutContext ("CcPreSend", MakeBoundCallback (&PreCacheCast, stream3));
+
+  Ptr<OutputStreamWrapper> stream4 = asciiTraceHelper.CreateFileStream ("cachecast4.txt");
+  devices3.Get (0)->TraceConnectWithoutContext ("CcPostSend", MakeBoundCallback (&PreCacheCast, stream4));
 
   Simulator::Run ();
   Simulator::Destroy ();

@@ -327,37 +327,38 @@ CacheCastServerUnit::HandlePacket (Ptr<Packet> p)
 \end{lstlisting}
 \end{footnotesize}
 
-The code itself should be rather self-explanatory. First we check if the payload 
-has been in the table for 1 second, and if it has we invalidate this payload ID from the 
+In the code we first check if the payload 
+has been in the table for more than 1 second, and if it has we invalidate this payload ID from the 
 table. The reason for doing this is to support wrapping of payload IDs. The 
 design of CacheCast specifies that a specific payload ID should be invalidated 
 if it has been present in a table for 1 second or more. The rest of the code 
-modifies the packet. If the packet's payload ID is not present in the table it 
+does the necessary modifications to the packet. If the packet's payload ID is not present in the table it 
 is added and no further changes are done to the packet payload. If a payload ID 
 is present in the table the payload is removed from the packet and the payload 
 size field in the CacheCastHeader is set to 0. At last the CacheCastHeader is 
 added to the packet. The HandlePacket() function returns control back to the 
 CacheCastNetDevice::TransmitStart() function which continues to transmit the 
-packet onto the link.
+packet onto the channel. The transmission time on the channel is calculated 
+based on the size of the modified packet.
 
 The design of CacheCast demands that the packets forming a packet train is put 
 in tight sequential order on the link. In order to obtain a continuous packet 
 train all packets with the same payload should be transmitted in one batch onto 
 the link. In the implementation of CacheCast in Linux this is handled by a 
 separate packet queue in the CacheCast kernel module to overcome the issue of 
-the multiprocess nature of modern operating system. In ns-3 all code is executed 
+the multiprogramming nature of modern operating system. In ns-3 all code is executed 
 in sequential order with no interruption. Also computing time on the nodes is 
 not modeled in ns-3. Thus in our implementation we do not need to batch the 
 packets at link layer level. The batching of sockets done in the application domain is 
 sufficient enough to form continuous packet trains.
 
-
-
-only one entry in table
-
-index to 0
-
-
+The fact that packets with the same payload ID 
+are sent as a batch onto the channel also imply that the table of payload IDs on 
+the server need only contain one element. In the code we don't even have a 
+table, the payload ID is stored as a single variable. This fact also implies that the CSU on 
+the other side of the channel from the server, need only have one slot in its 
+cache. Therefore we always use an index of 0 in the CacheCastHeader appended to 
+the packet.
 
 
 
