@@ -38,7 +38,6 @@
 #include "cachecast-channel.h"
 #include "cachecast-tag.h"
 #include "cachecast-header.h"
-#include <iostream>
 
 
 NS_LOG_COMPONENT_DEFINE ("CacheCastNetDevice");
@@ -273,7 +272,6 @@ CacheCastNetDevice::TransmitStart (Ptr<Packet> p)
 
     if (!ret) {
       //DO SOMETHING MAYBE
-      cout << "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\n";
       ;
     }
 

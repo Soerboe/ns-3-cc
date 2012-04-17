@@ -2,18 +2,17 @@
 #include "ns3/log.h"
 #include "ns3/simulator.h"
 #include "ns3/ipv4-header.h"
+#include "ns3/uinteger.h"
 
 #include "cache-management-unit.h"
 #include "cachecast-tag.h"
 #include "cachecast-header.h"
 
 NS_LOG_COMPONENT_DEFINE ("CacheManagementUnit");
-// using namespace std;
 
 namespace ns3 {
 
 NS_OBJECT_ENSURE_REGISTERED (CacheManagementUnit);
-// NS_LOG_COMPONENT_DEFINE ("FirstScriptExample");
 
 CacheManagementUnit::CacheManagementUnit ()
   : m_size (0),
@@ -21,19 +20,11 @@ CacheManagementUnit::CacheManagementUnit ()
 {
   NS_LOG_FUNCTION_NOARGS ();
 }
-/* ------------------------------------------------------- */
-
-// CacheManagementUnit::~CacheManagementUnit ()
-// {
-//   NS_LOG_FUNCTION_NOARGS ();
-// 
-// }
 
 void
 CacheManagementUnit::SetSize (uint32_t size)
 {
   m_size = size;
-  configureTable();
 }
 
 bool
@@ -74,7 +65,7 @@ CacheManagementUnit::HandlePacket (Ptr<Packet> p)
   {
     TableItem item (tag.GetPayloadId (), Simulator::Now ().GetSeconds (), false);
 //     m_tableIndexToItem.erase (m_currIndex); // remove already existing element
-    m_tableIndexToItem.insert(item);
+//     m_tableIndexToItem.insert(item);
     m_tableIdToIndex[id] = m_currIndex;
     cch.SetIndex (m_currIndex);
     m_currIndex = (m_currIndex + 1) % m_size;
@@ -84,16 +75,6 @@ CacheManagementUnit::HandlePacket (Ptr<Packet> p)
   p->AddHeader (cch);
 
   return true;
-}
-
-uint32_t CacheManagementUnit::searchPayloadID( uint32_t ID )
-{
-  for( uint32_t i =0; i < m_size; i++ )
-  {
-    if(table[i].payloadID == ID)
-      return i;
-  }
-  return 500;
 }
 
 TypeId

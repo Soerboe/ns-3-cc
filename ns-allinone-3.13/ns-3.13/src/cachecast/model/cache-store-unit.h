@@ -7,25 +7,12 @@
 #include "cachecast-unit.h"
 #include "cachecast-tag.h"
 
-//#include "cacheImplementation.h"
-
-struct bucket
-{
-	uint32_t payloadSize;
-	uint32_t payloadID;
-	uint32_t index;
-	
-	bucket *next;
-};
-
 namespace ns3 {
 
 /**
  * /brief Cache Store Unit
  *
  */
- 
-
 class CacheStoreUnit : public CacheCastUnit
 {
 public:
@@ -34,12 +21,6 @@ public:
    */
     
     CacheStoreUnit ();
-    uint32_t getHashKey(uint32_t);
-    bucket *table;
-    CacheCastTag *tag_obj;
-    void configureTable();
-    void hashPayload(uint32_t);
-    uint32_t searchPayloadID( uint32_t );
     
   /** 
    * Documented in CacheCastUnit 
@@ -58,14 +39,12 @@ public:
 
   static TypeId GetTypeId (void);
   virtual TypeId GetInstanceTypeId (void) const;
-  
-  uint32_t m_size;
 
 private:
   /* Size of the CSU's cache */
+  uint32_t m_size;
   
   /* Size of the CSU cache's slots */
-  void setPayloadInSlots( uint32_t , uint32_t);
   uint32_t m_slotSize;
 };
 
