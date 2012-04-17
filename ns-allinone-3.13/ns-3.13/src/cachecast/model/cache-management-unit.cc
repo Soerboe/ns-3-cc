@@ -27,18 +27,27 @@ CacheManagementUnit::SetSize (uint32_t size)
   m_size = size;
 }
 
+void
+CacheManagementUnit::SetSlotSize (uint32_t slotSize)
+{
+  m_slotSize = slotSize;
+}
+
 bool
 CacheManagementUnit::HandlePacket (Ptr<Packet> p)
 {
-//   NS_ASSERT_MSG (m_size > 0, "CMU's table size must be a positive integer");
+  NS_ASSERT_MSG (m_size > 0, "CMU's table size must be a positive integer");
   
   CacheCastTag tag;
-  p->RemovePacketTag (tag);
+  p->PeekPacketTag (tag);
+
+  /* Check if there are enough slots */
+  uint32_t slotsCount = tag.GetPayloadSize () / m_slotSize + 1;
+  NS_ASSERT_MSG (slotsCount > m_size, "CacheCast packet is too large for the CSU");
 
   /* Get IP address of packet */
   Ipv4Header ipHdr;
   uint32_t ipRead = p->PeekHeader (ipHdr);
-  // Handle IPv6?
   NS_ASSERT (ipRead);
   uint32_t addr = ipHdr.GetSource ().Get ();
 
@@ -51,11 +60,11 @@ CacheManagementUnit::HandlePacket (Ptr<Packet> p)
 
   CacheCastHeader cch (tag.GetPayloadId (), tag.GetPayloadSize (), 0);
 
+    // TODO handle wrapping, timeout
+
   /* Cache hit */
   if (it != m_tableIdToIndex.end ())
   {
-    // TODO handle wrapping, timeout
-
     p->RemoveAtEnd (tag.GetPayloadSize ());
     cch.SetPayloadSize (0);
     cch.SetIndex ((*it).second);
@@ -63,12 +72,26 @@ CacheManagementUnit::HandlePacket (Ptr<Packet> p)
   /* Cache miss */
   else
   {
-    TableItem item (tag.GetPayloadId (), Simulator::Now ().GetSeconds (), false);
-//     m_tableIndexToItem.erase (m_currIndex); // remove already existing element
-//     m_tableIndexToItem.insert(item);
-    m_tableIdToIndex[id] = m_currIndex;
     cch.SetIndex (m_currIndex);
-    m_currIndex = (m_currIndex + 1) % m_size;
+
+    for (int i = 0; i < slotsCount; i++)
+    {
+      TableItem &item = m_tableIndexToItem [m_currIndex]; //TODO
+
+      if (item.idInSlot)
+      {
+        m_tableIndexToItem[m_currIndex].idInSlot = false;
+        m_tableIdToIndex.erase (item.id);
+      }
+      
+      m_currIndex = (m_currIndex + 1) % m_size;
+    }
+//TODO
+//     TableItem item (id, Simulator::Now ().GetSeconds (), false);
+//     m_tableIndexToItem[cch.GetIndex ()] = item; // remove already existing element
+    m_tableIndexToItem[cch.GetIndex ()].id = id; // remove already existing element
+//     m_tableIndexToItem.insert(item);
+    m_tableIdToIndex[id] = cch.GetIndex ();
 
   }
 

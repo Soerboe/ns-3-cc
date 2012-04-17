@@ -207,8 +207,10 @@ CacheCastHelper::Install (Ptr<Node> n1, Ptr<Node> n2)
   Ptr<CacheCastNetDevice> dev1 = m_deviceFactory.Create<CacheCastNetDevice> ();
   Ptr<CacheManagementUnit> cmu = Create<CacheManagementUnit> ();
   
-  // TODO Change
+  // TODO Change these two
   cmu->SetSize(10);
+
+  cmu->SetSlotSize (1500);
   
   dev1->AddSenderUnit (cmu);
   Ptr<Queue> queue1 = m_queueFactory.Create<Queue> ();
