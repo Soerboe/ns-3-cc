@@ -45,23 +45,24 @@ private:
   struct TableItem
   {
     uint64_t id;
-    double timeStamp;
-    bool invalid;
     bool idInSlot;
+//     double timeStamp;
+//     bool invalid;
 
     TableItem () {
 //TODO 
+      idInSlot = false;
     }
 
-    TableItem (uint64_t _id, double _timeStamp, bool _invalid)
-    {
-      id = _id;
-      timeStamp = _timeStamp;
-      invalid = _invalid;
-      idInSlot = true;
-    }
+//     TableItem (uint64_t _id, double _timeStamp, bool _invalid)
+//     {
+//       id = _id;
+//       timeStamp = _timeStamp;
+//       invalid = _invalid;
+//       idInSlot = true;
+//     }
 
-    bool operator<(const TableItem &item) const
+    bool operator< (const TableItem &item) const
     {
       return id < item.id;
     }

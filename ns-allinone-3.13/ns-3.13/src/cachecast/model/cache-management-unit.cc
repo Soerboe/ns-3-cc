@@ -37,15 +37,17 @@ bool
 CacheManagementUnit::HandlePacket (Ptr<Packet> p)
 {
   NS_ASSERT_MSG (m_size > 0, "CMU's table size must be a positive integer");
+  NS_ASSERT_MSG (m_slotSize > 0, "CMU's slot size size must be a positive integer");
   
   CacheCastTag tag;
   p->PeekPacketTag (tag);
 
   /* Check if there are enough slots */
-  uint32_t slotsCount = tag.GetPayloadSize () / m_slotSize + 1;
+  uint32_t slotsCount = (tag.GetPayloadSize () - 1) / m_slotSize + 1;
+  slotsCount = (slotsCount == 0) ? 1 : slotsCount;
   NS_ASSERT_MSG (slotsCount > m_size, "CacheCast packet is too large for the CSU");
 
-  /* Get IP address of packet */
+  /* Get IPv4 address of packet */
   Ipv4Header ipHdr;
   uint32_t ipRead = p->PeekHeader (ipHdr);
   NS_ASSERT (ipRead);
@@ -72,7 +74,8 @@ CacheManagementUnit::HandlePacket (Ptr<Packet> p)
   /* Cache miss */
   else
   {
-    cch.SetIndex (m_currIndex);
+    uint32_t index = m_currIndex;
+    cch.SetIndex (index);
 
     for (int i = 0; i < slotsCount; i++)
     {
@@ -83,15 +86,16 @@ CacheManagementUnit::HandlePacket (Ptr<Packet> p)
         m_tableIndexToItem[m_currIndex].idInSlot = false;
         m_tableIdToIndex.erase (item.id);
       }
-      
+
+      /* Cache replacement is just a round robbin scheme */
       m_currIndex = (m_currIndex + 1) % m_size;
     }
-//TODO
+
 //     TableItem item (id, Simulator::Now ().GetSeconds (), false);
-//     m_tableIndexToItem[cch.GetIndex ()] = item; // remove already existing element
-    m_tableIndexToItem[cch.GetIndex ()].id = id; // remove already existing element
+    m_tableIndexToItem[index].id = id;
+    m_tableIndexToItem[index].idInSlot = true;
 //     m_tableIndexToItem.insert(item);
-    m_tableIdToIndex[id] = cch.GetIndex ();
+    m_tableIdToIndex[id] = index;
 
   }
 
