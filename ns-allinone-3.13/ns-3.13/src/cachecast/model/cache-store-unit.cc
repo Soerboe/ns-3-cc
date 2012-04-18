@@ -32,15 +32,19 @@ bool
 CacheStoreUnit::HandlePacket (Ptr<Packet> p)
 {
   NS_LOG_FUNCTION (p);
+  NS_ASSERT_MSG (m_size > 0, "CSU's cache size must be a positive integer");
+  NS_ASSERT_MSG (m_slotSize > 0, "CSU's slot size must be a positive integer");
+
   CacheCastHeader cch;
   p->RemoveHeader(cch);  
   
-  cch->GetIndex();
-  cch->GetPayloadSize();
   
-  
-  if( cch->GetPayloadSize()>m_size)
-    return false;
+  /* Check if there are enough slots */
+  uint32_t slotsCount = (tag.GetPayloadSize () - 1) / m_slotSize + 1;
+  slotsCount = (slotsCount == 0) ? 1 : slotsCount;
+  NS_ASSERT_MSG (slotsCount > m_size, "CacheCast packet is too large for the CSU"); 
+
+  NS_ASSERT_MSG (cch->GetIndex() > m_size, "CacheCast index is too large");
 
    /* Get IP address of packet */
   Ipv4Header ipHdr;
@@ -52,15 +56,21 @@ CacheStoreUnit::HandlePacket (Ptr<Packet> p)
   /* Construct universally unique id */
   uint64_t id = ((uint64_t) addr << 32) | cch->GetPayloadId();
 
-  TableItem item ( cch->GetPayloadId(), cch->GetPayloadSize(), false);
-  m_tableIndexToItem.insert(item);
-
+  /* Only header arrived */
   if(cch->GetPayloadSize() == 0)
   {
-     
-  }else
+    TableItem &item = m_cache[cch->GetIndex()];
+    if(item.id != id)
+    {
+      return false;  
+    }
+    p->AddPaddingAtEnd(item.payloadsize);     
+  }
+  /* Full CacheCast packet arrived */
+  else
   {
-  
+    m_cache[cch->GetIndex()].id = id; 
+    m_cache[cch->GetIndex()].payloadSize = cch->GetPayloadSize(); 
   }
   
   /*

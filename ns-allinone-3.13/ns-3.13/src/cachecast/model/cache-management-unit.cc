@@ -36,8 +36,9 @@ CacheManagementUnit::SetSlotSize (uint32_t slotSize)
 bool
 CacheManagementUnit::HandlePacket (Ptr<Packet> p)
 {
+  NS_LOG_FUNCTION (p);
   NS_ASSERT_MSG (m_size > 0, "CMU's table size must be a positive integer");
-  NS_ASSERT_MSG (m_slotSize > 0, "CMU's slot size size must be a positive integer");
+  NS_ASSERT_MSG (m_slotSize > 0, "CMU's slot size must be a positive integer");
   
   CacheCastTag tag;
   p->PeekPacketTag (tag);

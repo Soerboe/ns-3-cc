@@ -49,16 +49,16 @@ private:
 
   struct TableItem
   {
-    uint32_t id;
-    uint32_t size;
+    uint64_t id;
+    uint32_t payloadSize;
 
-    TableItem (uint32_t _id, uint32_t _size)
+    bool operator< (const TableItem &item) const
     {
-      id = _id;
-      size = _size;
+      return id < item.id;
     }
   };
-  std::map<uint32_t, TableItem> m_tableIndexToItem;
+
+  std::map<uint32_t, TableItem> m_cache;
 
 };
 
