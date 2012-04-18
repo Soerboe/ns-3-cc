@@ -260,7 +260,7 @@ CacheCastNetDevice::TransmitStart (Ptr<Packet> p)
 
     bool ret = m_senderUnit->HandlePacket (p);
 
-    std::cerr << "HEIHEO\n";
+//     std::cerr << "HEIHEO\n";
     // TODO remove
 //     CacheCastHeader cch;
 //     if (p->PeekHeader (cch) == 0) {
@@ -397,8 +397,10 @@ CacheCastNetDevice::Receive (Ptr<Packet> packet)
         PppHeader ppp;
         packet->RemoveHeader (ppp);
 
-        m_receiverUnit->HandlePacket (packet);
+        bool ret = m_receiverUnit->HandlePacket (packet);
         
+        
+
 //         packet->RemoveHeader (ccHrd);
         
         // TODO remove when CSU is finished
@@ -415,6 +417,10 @@ CacheCastNetDevice::Receive (Ptr<Packet> packet)
         packet->AddHeader (ppp);
 
 //         std::cerr << "SIZE" << packet->GetSize() << "\n";
+
+        /* Packet should be dropped */
+        if (ret == false)
+          return;
 
         m_postReceiverUnitTrace (packet);
       }

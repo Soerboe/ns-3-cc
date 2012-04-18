@@ -42,7 +42,7 @@ main (int argc, char *argv[])
   LogComponentEnable ("CacheCastServerUnit", LOG_LEVEL_ALL);
   LogComponentEnable ("CacheCastPid", LOG_LEVEL_ALL);
   LogComponentEnable ("UdpEchoServerApplication", LOG_LEVEL_INFO);
-  LogComponentEnable ("CacheCastNetDevice", LOG_LEVEL_ALL);
+  LogComponentEnable ("CacheCastNetDevice", LOG_LEVEL_INFO);
   LogComponentEnable ("CacheStoreUnit", LOG_LEVEL_ALL);
   LogComponentEnable ("CacheManagementUnit", LOG_LEVEL_ALL);
   LogComponentEnable ("CacheCastTestClient", LOG_LEVEL_INFO);
@@ -118,12 +118,12 @@ main (int argc, char *argv[])
   Address addr1 (InetSocketAddress (interfaces3.GetAddress (1), PORT));
   Address addr2 (InetSocketAddress (interfaces4.GetAddress (1), PORT));
   app->AddAddress (addr1);
-//   app->AddAddress (addr2);
-//   app->AddAddress (addr2);
+  app->AddAddress (addr2);
+  app->AddAddress (addr2);
   app->AddAddress (addr1);
-//   app->AddAddress (addr1);
-//   app->AddAddress (addr1);
-//   app->AddAddress (addr1);
+  app->AddAddress (addr1);
+  app->AddAddress (addr1);
+  app->AddAddress (addr1);
   nodes.Get (0)->AddApplication (app);
   app->SetStartTime (Seconds (2.0));
   app->SetStopTime (Seconds (10.0));

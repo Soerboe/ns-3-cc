@@ -2,6 +2,7 @@
 #ifndef __CACHE_STORE_UNIT_H__
 #define __CACHE_STORE_UNIT_H__
 
+#include <map>
 #include "ns3/object.h"
 #include "ns3/packet.h"
 #include "cachecast-unit.h"

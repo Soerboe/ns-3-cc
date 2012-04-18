@@ -14,11 +14,13 @@ public:
   static TypeId GetTypeId (void);
   CacheCastTestApplication ();
   void AddAddress (Address address);
+  void SetPacketSize (uint32_t packetSize);
 private:
   void SocketFailed (uint32_t socketIndex);
   virtual void StartApplication (void);
   virtual void StopApplication (void);
 
+  uint32_t m_packetSize;
   std::vector<Address> m_address;
 };
 

@@ -44,9 +44,9 @@ CacheManagementUnit::HandlePacket (Ptr<Packet> p)
   p->PeekPacketTag (tag);
 
   /* Check if there are enough slots */
-  uint32_t slotsCount = (tag.GetPayloadSize () - 1) / m_slotSize + 1;
-  slotsCount = (slotsCount == 0) ? 1 : slotsCount;
-  NS_ASSERT_MSG (slotsCount > m_size, "CacheCast packet is too large for the CSU");
+  uint32_t slotsCount = (tag.GetPayloadSize () != 0) ?
+    (tag.GetPayloadSize () - 1) / m_slotSize + 1 : 1;
+  NS_ASSERT_MSG (slotsCount <= m_size, "CacheCast packet is too large for the CSU");
 
   /* Get IPv4 address of packet */
   Ipv4Header ipHdr;

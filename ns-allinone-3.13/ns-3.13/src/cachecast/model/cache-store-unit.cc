@@ -1,6 +1,7 @@
 /* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil; -*- */
 #include "ns3/log.h"
 // #include "ns3/simulator.h"
+#include "ns3/ipv4-header.h"
 #include "ns3/uinteger.h"
 #include "cache-store-unit.h"
 #include "cachecast-header.h"
@@ -36,15 +37,14 @@ CacheStoreUnit::HandlePacket (Ptr<Packet> p)
   NS_ASSERT_MSG (m_slotSize > 0, "CSU's slot size must be a positive integer");
 
   CacheCastHeader cch;
-  p->RemoveHeader(cch);  
-  
+  p->RemoveHeader(cch);
   
   /* Check if there are enough slots */
-  uint32_t slotsCount = (tag.GetPayloadSize () - 1) / m_slotSize + 1;
-  slotsCount = (slotsCount == 0) ? 1 : slotsCount;
-  NS_ASSERT_MSG (slotsCount > m_size, "CacheCast packet is too large for the CSU"); 
+  uint32_t slotsCount = (cch.GetPayloadSize () != 0) ?
+    (cch.GetPayloadSize () - 1) / m_slotSize + 1 : 1;
+  NS_ASSERT_MSG (slotsCount <= m_size, "CacheCast packet is too large for the CSU"); 
 
-  NS_ASSERT_MSG (cch->GetIndex() > m_size, "CacheCast index is too large");
+  NS_ASSERT_MSG (cch.GetIndex() < m_size, "CacheCast index is too large");
 
    /* Get IP address of packet */
   Ipv4Header ipHdr;
@@ -54,23 +54,23 @@ CacheStoreUnit::HandlePacket (Ptr<Packet> p)
   uint32_t addr = ipHdr.GetSource ().Get ();
 
   /* Construct universally unique id */
-  uint64_t id = ((uint64_t) addr << 32) | cch->GetPayloadId();
+  uint64_t id = ((uint64_t) addr << 32) | cch.GetPayloadId();
 
   /* Only header arrived */
-  if(cch->GetPayloadSize() == 0)
+  if(cch.GetPayloadSize() == 0)
   {
-    TableItem &item = m_cache[cch->GetIndex()];
+    TableItem &item = m_cache[cch.GetIndex()];
     if(item.id != id)
     {
       return false;  
     }
-    p->AddPaddingAtEnd(item.payloadsize);     
+    p->AddPaddingAtEnd(item.payloadSize);     
   }
   /* Full CacheCast packet arrived */
   else
   {
-    m_cache[cch->GetIndex()].id = id; 
-    m_cache[cch->GetIndex()].payloadSize = cch->GetPayloadSize(); 
+    m_cache[cch.GetIndex()].id = id; 
+    m_cache[cch.GetIndex()].payloadSize = cch.GetPayloadSize(); 
   }
   
   /*

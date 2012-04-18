@@ -25,6 +25,7 @@ CacheCastTestApplication::GetTypeId (void)
 }
 
 CacheCastTestApplication::CacheCastTestApplication ()
+  : m_packetSize (1024)
 {
   NS_LOG_FUNCTION_NOARGS ();
 }
@@ -34,6 +35,12 @@ CacheCastTestApplication::AddAddress (Address address)
 {
   NS_LOG_FUNCTION (address);
   m_address.push_back (address);
+}
+
+void
+CacheCastTestApplication::SetPacketSize (uint32_t packetSize)
+{
+  m_packetSize = packetSize;
 }
 
 void
@@ -68,7 +75,7 @@ CacheCastTestApplication::StartApplication (void)
 //    
 //     cc.Merge(cc2);
 
-  Ptr<Packet> packet = Create<Packet> (1410);
+  Ptr<Packet> packet = Create<Packet> (m_packetSize);
 //   Ptr<Packet> packet = Create<Packet> (1472);
 //   NS_LOG_INFO ("Packet size: " << packet->GetSize ());
 

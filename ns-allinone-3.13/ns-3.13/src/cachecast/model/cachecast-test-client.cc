@@ -74,7 +74,7 @@ CacheCastTestClient::HandleRead (Ptr<Socket> socket)
   Address from;
   while (packet = socket->RecvFrom (from))
     {
-      NS_LOG_INFO ("CacheCast client: Received " << packet->GetSize () << " bytes from " <<
+      NS_LOG_INFO ("CacheCast client " << this << ": " << "Received " << packet->GetSize () << " bytes from " <<
                     InetSocketAddress::ConvertFrom (from).GetIpv4 ());
     }
 }
