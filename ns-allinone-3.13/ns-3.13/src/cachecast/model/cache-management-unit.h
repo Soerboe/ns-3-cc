@@ -21,7 +21,6 @@ public:
    * /brief Construct an empty CacheManagementUnit
    */
   CacheManagementUnit ();
-//   ~CacheManagementUnit ();
 
   /** 
    * Documented in CacheCastUnit 
@@ -46,21 +45,11 @@ private:
   {
     uint64_t id;
     bool idInSlot;
-//     double timeStamp;
-//     bool invalid;
+    double timeStamp;
 
     TableItem () {
-//TODO 
       idInSlot = false;
     }
-
-//     TableItem (uint64_t _id, double _timeStamp, bool _invalid)
-//     {
-//       id = _id;
-//       timeStamp = _timeStamp;
-//       invalid = _invalid;
-//       idInSlot = true;
-//     }
 
     bool operator< (const TableItem &item) const
     {

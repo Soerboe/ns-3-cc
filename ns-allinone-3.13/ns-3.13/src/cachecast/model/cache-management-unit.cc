@@ -39,7 +39,7 @@ CacheManagementUnit::HandlePacket (Ptr<Packet> p)
   NS_LOG_FUNCTION (p);
   NS_ASSERT_MSG (m_size > 0, "CMU's table size must be a positive integer");
   NS_ASSERT_MSG (m_slotSize > 0, "CMU's slot size must be a positive integer");
-  
+
   CacheCastTag tag;
   p->PeekPacketTag (tag);
 
@@ -63,24 +63,36 @@ CacheManagementUnit::HandlePacket (Ptr<Packet> p)
 
   CacheCastHeader cch (tag.GetPayloadId (), tag.GetPayloadSize (), 0);
 
-    // TODO handle wrapping, timeout
+  bool timeout = false;
 
   /* Cache hit */
   if (it != m_tableIdToIndex.end ())
   {
-    p->RemoveAtEnd (tag.GetPayloadSize ());
-    cch.SetPayloadSize (0);
-    cch.SetIndex ((*it).second);
+    /* Check if element it too old */
+    TableItem &item = m_tableIndexToItem[(*it).second];
+    if (Simulator::Now ().GetSeconds () - item.timeStamp > 1.0)
+    {
+      NS_LOG_DEBUG ("CMU: Timeout");
+      m_tableIdToIndex.erase (item.id);
+      timeout = true;
+    }
+    else
+    {
+      p->RemoveAtEnd (tag.GetPayloadSize ());
+      cch.SetPayloadSize (0);
+      cch.SetIndex ((*it).second);
+    }
   }
+
   /* Cache miss */
-  else
+  if (it == m_tableIdToIndex.end () || timeout)
   {
     uint32_t index = m_currIndex;
     cch.SetIndex (index);
 
     for (int i = 0; i < slotsCount; i++)
     {
-      TableItem &item = m_tableIndexToItem [m_currIndex]; //TODO
+      TableItem &item = m_tableIndexToItem [m_currIndex];
 
       if (item.idInSlot)
       {
@@ -92,16 +104,13 @@ CacheManagementUnit::HandlePacket (Ptr<Packet> p)
       m_currIndex = (m_currIndex + 1) % m_size;
     }
 
-//     TableItem item (id, Simulator::Now ().GetSeconds (), false);
     m_tableIndexToItem[index].id = id;
     m_tableIndexToItem[index].idInSlot = true;
-//     m_tableIndexToItem.insert(item);
+    m_tableIndexToItem[index].timeStamp = Simulator::Now ().GetSeconds ();
     m_tableIdToIndex[id] = index;
-
   }
 
   p->AddHeader (cch);
-
   return true;
 }
 

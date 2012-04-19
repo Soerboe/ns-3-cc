@@ -12,3 +12,6 @@ def build(bld):
 
     obj = bld.create_ns3_program('cachecast-example5', ['cachecast', 'network', 'internet', 'applications'])
     obj.source = 'cachecast-example5.cc'
+
+    obj = bld.create_ns3_program('cachecast-example6', ['cachecast', 'network', 'internet', 'applications'])
+    obj.source = 'cachecast-example6.cc'

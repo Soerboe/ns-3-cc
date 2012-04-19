@@ -46,10 +46,9 @@ CacheStoreUnit::HandlePacket (Ptr<Packet> p)
 
   NS_ASSERT_MSG (cch.GetIndex() < m_size, "CacheCast index is too large");
 
-   /* Get IP address of packet */
+  /* Get IP address of packet */
   Ipv4Header ipHdr;
   uint32_t ipRead = p->PeekHeader (ipHdr);
-  // Handle IPv6?
   NS_ASSERT (ipRead);
   uint32_t addr = ipHdr.GetSource ().Get ();
 
@@ -60,10 +59,12 @@ CacheStoreUnit::HandlePacket (Ptr<Packet> p)
   if(cch.GetPayloadSize() == 0)
   {
     TableItem &item = m_cache[cch.GetIndex()];
+
     if(item.id != id)
     {
       return false;  
     }
+
     p->AddPaddingAtEnd(item.payloadSize);     
   }
   /* Full CacheCast packet arrived */

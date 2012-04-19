@@ -210,7 +210,7 @@ CacheCastHelper::Install (Ptr<Node> n1, Ptr<Node> n2)
   // TODO Change these two
   cmu->SetSize(10);
 
-  cmu->SetSlotSize (1500);
+  cmu->SetSlotSize (800);
   
   dev1->AddSenderUnit (cmu);
   Ptr<Queue> queue1 = m_queueFactory.Create<Queue> ();
@@ -225,7 +225,7 @@ CacheCastHelper::Install (Ptr<Node> n1, Ptr<Node> n2)
   // TODO Change these two
   csu->SetSize(10);
   // TODO 
-  csu->SetSlotSize (1500);
+  csu->SetSlotSize (800);
 
   dev2->AddReceiverUnit (csu);
   Ptr<Queue> queue2 = m_queueFactory.Create<Queue> ();
