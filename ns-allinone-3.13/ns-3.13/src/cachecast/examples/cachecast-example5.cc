@@ -42,7 +42,7 @@ static void
 TraceCacheCast (Ptr<OutputStreamWrapper> stream, Ptr<const Packet> p)
 {
   *stream->GetStream () << Simulator::Now ().GetSeconds () << "\t" 
-    << p->GetSize () << "\t" << p << std::endl;
+    << p->GetSize () << "\n"; // << "\t" << p << std::endl;
 }
 
 int 
@@ -136,22 +136,23 @@ main (int argc, char *argv[])
   app0->SetPacketSize (1000);
   app0->AddAddress (addr5);
   app0->AddAddress (addr5);
-  app0->AddAddress (addr6);
-  app0->AddAddress (addr6);
+  app0->AddAddress (addr5);
+//   app0->AddAddress (addr6);
+//   app0->AddAddress (addr6);
   nodes.Get (0)->AddApplication (app0);
-  app0->SetStartTime (Seconds (2.0));
+  app0->SetStartTime (Seconds (1.0));
   app0->SetStopTime (Seconds (10.0));
 
   /* Set up server 1 application */
-  Ptr<CacheCastTestApplication> app1 = Create<CacheCastTestApplication> ();
-  app1->SetPacketSize (600);
-  app1->AddAddress (addr5);
-  app1->AddAddress (addr6);
-  app1->AddAddress (addr6);
-  app1->AddAddress (addr6);
-  nodes.Get (1)->AddApplication (app1);
-  app1->SetStartTime (Seconds (2.0));
-  app1->SetStopTime (Seconds (10.0));
+//   Ptr<CacheCastTestApplication> app1 = Create<CacheCastTestApplication> ();
+//   app1->SetPacketSize (600);
+//   app1->AddAddress (addr5);
+//   app1->AddAddress (addr6);
+//   app1->AddAddress (addr6);
+//   app1->AddAddress (addr6);
+//   nodes.Get (1)->AddApplication (app1);
+//   app1->SetStartTime (Seconds (1.0));
+//   app1->SetStopTime (Seconds (10.0));
 
 //   Packet::EnablePrinting();
 //   Packet::EnableChecking();
