@@ -147,28 +147,12 @@ std::vector<Address>::const_iterator it;
 
 CacheCast cc;
 
-for (it = m_address.begin();
-it < m_address.end(); ++it)
-{
-  Ptr<Socket> socket = Socket::CreateSocket 
-  (GetNode (), TypeId::LookupByName 
-  ("ns3::UdpSocketFactory"));
-  socket->Bind();
-  socket->Connect (*it);
-  cc.AddSocket (socket);
-}
-for (it = m_address.begin();
- it < m_address.end(); ++it) 
-{
-  Ptr<Socket> socket = Socket::CreateSocket 
-  (GetNode (), TypeId::LookupByName 
-  ("ns3::UdpSocketFactory"));
-  socket->Bind();
-  socket->Connect (*it);
-  cc2.AddSocket (socket);
-}
-
-cc.Merge(cc2);
+Ptr<Socket> socket = Socket::CreateSocket 
+(GetNode (), TypeId::LookupByName 
+ ("ns3::UdpSocketFactory"));
+socket->Bind();
+socket->Connect (*it);
+cc.AddSocket (socket);
 
 Ptr<Packet> packet = Create<Packet> (1472);
 
@@ -185,8 +169,9 @@ if(!cc.Msend(packet)){
 \end{footnotesize}
 
 \subsection{Helpers}
+The helpers are used to setup the server unit / CMU and CSU on nodes before channel between these units is defined. CacheCastHelper::Install method takes pointer for two nodes as arguments.  First, CacheCastNetDevices are created, one for each node.      
 
-
+\subsubsection{CacheCastHelper}
 
 \section{Implementation details} % HOW IT WORKS
 In the previous section we looked at the implementation of CacheCast in ns-3 
