@@ -183,12 +183,11 @@ normal IP packets.
 \end{description}
 
 
-
 \section{The ns-3 network simulator\label{s2}}
-The ns-3 network simulator\cite{ns-3} is a discrete-event network simulator. It is an open-source project written in C++. ns-2 is a version prior to ns-3, which is a new simulator that does not support the ns-2 APIs. Some models from ns-2 have already been ported from ns-2 to ns-3, and some has not yet been implemented in ns-3.
+The ns-3 simulator is a discrete-event network simulator. It is an open-source project written in C++. ns-2 is a version prior to ns-3, which is a new simulator that does not support the ns-2 APIs. Some models from ns-2 have already been ported from ns-2 to ns-3, and some has not yet been implemented in ns-3. Version of ns-3 we have used is ns-3.13. 
 
 \subsection*{Abstractions}
-Before we start explaining the implementation of CacheCast in ns-3, it is important to understand abstractions and terms that are used in ns-3
+Implementation in ns-3 is based on abstraction, so it can be simplified. These abstraction have differences from the network as we know in reality. Before we start explaining our implementation of CacheCast in ns-3, it is important to understand abstractions and terms that are used in ns-3.
 
 \subsubsection{Node}
 In ns-3 devices like host and end-user are represented as abstractions of nodes by the class \texttt{Node}. This class provides management of how these devices will be represented in simulations. 
@@ -216,19 +215,10 @@ Since end-to-end cachecast connections are handled by different sockets, the sen
 
 Since a such socket container is not supported by transport layer and nor a part of a application-layer, we chose to implement a CacheCast Application Programming Interface in the class \texttt{CacheCast}. This interface will not only support the socket container, but also systemcall \texttt{Msend()} would be provided to the application. This is much more practical than having a static systemcall called by the application.
 
-\begin{footnotesize}
-\begin{lstlisting}[language=C]
---------------------------------------------------
-std::vector <Ptr <Socket> > m_sockets; 
-std::vector <Ptr <Socket> > m_failed;
---------------------------------------------------
-\end{lstlisting}
-\end{footnotesize}
+The socket container itself is implemented as a vector of sockets (\texttt{m\_sockets}), which contains sockets added by application. In addition to vector \texttt{m\_sockets} we chose to have another vector \texttt{m\_failed} to provide the application the knowledge of sockets that failed during the msend procedure.
+\begin{footnotesize} 
+\begin{lstlisting}[language=C,caption = Services provided to application, label=services]
 
-The socketcontainer itself is implemented as a vector of sockets (\texttt{m\_sockets}), which contains sockets added by application. In addition to vector \texttt{m\_sockets} we chose to have another vector \texttt{m\_failed} to provide the application the knowledge of sockets that failed during the msend procedure.
-
-\begin{footnotesize}
-\begin{lstlisting}[language=C]
 --------------------------------------------------
 void AddSocket(Ptr<Socket> socket);
 void RemoveSocket(Ptr<Socket> socket);
@@ -245,37 +235,22 @@ bool Msend(Ptr<Packet> packet);
 --------------------------------------------------
 \end{lstlisting}
 \end{footnotesize}
-In order to maintain the container of sockets, some facilities are provided to the application. It is necessary for the application to add or remove sockets in the container. And the possibility to merge two or more socketcontainers might also become handy.
+In order to maintain the container of sockets, some facilities are provided to the application. It is necessary for the application to add or remove sockets in the container. And the possibility to merge two or more socketcontainers might also become handy. It is described in Listing \ref{services}.
+ 
 
 \begin{footnotesize}
-\begin{lstlisting}[language=C]
+\begin{lstlisting}[language=C, caption = Example of usage of CasheCast API]
 --------------------------------------------------
 std::vector<Address>::const_iterator it;
 
 CacheCast cc;
 
-for (it = m_address.begin();
-it < m_address.end(); ++it)
-{
-  Ptr<Socket> socket = Socket::CreateSocket 
-  (GetNode (), TypeId::LookupByName 
-  ("ns3::UdpSocketFactory"));
-  socket->Bind();
-  socket->Connect (*it);
-  cc.AddSocket (socket);
-}
-for (it = m_address.begin();
- it < m_address.end(); ++it) 
-{
-  Ptr<Socket> socket = Socket::CreateSocket 
-  (GetNode (), TypeId::LookupByName 
-  ("ns3::UdpSocketFactory"));
-  socket->Bind();
-  socket->Connect (*it);
-  cc2.AddSocket (socket);
-}
-
-cc.Merge(cc2);
+Ptr<Socket> socket = Socket::CreateSocket 
+(GetNode (), TypeId::LookupByName 
+ ("ns3::UdpSocketFactory"));
+socket->Bind();
+socket->Connect (*it);
+cc.AddSocket (socket);
 
 Ptr<Packet> packet = Create<Packet> (1472);
 
@@ -292,7 +267,7 @@ if(!cc.Msend(packet)){
 \end{footnotesize}
 
 \subsection{Helpers}
-
+Helpers are used to setup the Server unit / CMU and CSU on nodes before channel between these units is defined. In both helpers, Install function takes pointer for two nodes as arguments. The only difference between these two helpers is that CacheCastServerHelper is intended to be used to define characteristics of connections between Serverunit and CSU and CacheCastHelper to define CMU and CSU. First, CacheCastNetDevices are created for each of these nodes. Server unit, CMU or CSU are then added to these devices based on type of node that are being installed. These devices are then attached to CacheCastChannel before they are added into a container of devices.    
 
 
 \section{Implementation details\label{s4}} % HOW IT WORKS
@@ -470,11 +445,12 @@ section \ref{serverunit}.
 \subsubsection{Details of the API implementation\label{api_impl}}
 
 
-TODO write about CacheCastPid
+\subsubsection{CacheCastPid}
+
 
 \begin{footnotesize}
 % -------------- WIDTH ----------------------------]
-\begin{lstlisting}[language=C]
+\begin{lstlisting}[language=C,caption = Function Msend()]
 --------------------------------------------------
 bool 
 CacheCast::Msend (Ptr<Packet> packet)

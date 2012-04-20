@@ -107,7 +107,7 @@ CacheCast::Msend (Ptr<Packet> packet)
 }
 
 void
-CacheCast::Merge(CacheCast cc)
+CacheCast::Merge(CacheCast &cc)
 {
   std::vector<Ptr<Socket> >::iterator vItr = cc.m_sockets.begin();
   while ( vItr != cc.m_sockets.end() )
