@@ -223,7 +223,8 @@ CacheCastHeader is given in the listing below.
 
 \begin{footnotesize}
 % -------------- WIDTH ----------------------------]
-\begin{lstlisting}[language=C, frame=single]
+\begin{lstlisting}[language=C]
+--------------------------------------------------
 #include "ns3/header.h"
 
 namespace ns3 {
@@ -252,6 +253,7 @@ private:
   uint32_t m_index;
 };
 }
+--------------------------------------------------
 \end{lstlisting}
 \end{footnotesize}
 
@@ -261,12 +263,17 @@ In ns-3 one have the possibility to add packet tags to packets in order to store
 information on a packet level. In the implementation of CacheCast we use packet 
 tags to store CacheCast related values when the packet is processed in a node 
 (where the CacheCast header is not present). These values are the payload ID and 
-the payload size. These are necessary for the CMU in order to uniquely identify 
-CacheCast packets and handle them correctly. 
-
-% The CacheCastTag is added by the 
-% Msend() function on the server and the CSU on the other nodes. It is removed by 
-% the CacheCastServerUnit and the CMU TODO DO WE NEED TO REMOVE THE TAG?
+the payload size. These are necessary for the CMU and server unit in order to 
+uniquely identify CacheCast packets and handle them correctly. In an 
+implementation in a normal router, metadata attributes is added to the CacheCast 
+packets while they are being processed in the router. The CacheCastTag simulates 
+this metadata but the CacheCastTag is not removed from the packet when the 
+packets has been processed by a router node. There is no problem with this 
+design choice since packet tags do not affect how the packets it being 
+transmitted on a link, and because the payload ID and payload size is the same 
+in the whole lifetime of a CacheCast packet. The CacheCastTag is added to the 
+packets by the \textsf{CacheCast::Msend()} function (see section 
+\ref{api_impl}).
 
 \subsubsection{CacheCastUnit}
 The CacheCastUnit class is an abstract base class which should be derived from 
@@ -323,8 +330,7 @@ implementation.
 \subsection{Server support}
 The CacheCast system relies on support from the server in order to remove 
 redundant payload in the network. This server support should send all packets 
-sequentially onto the link and truncate all packets beside the first one. This 
-removes redundant payload from the link and forms a packet train.
+sequentially onto the link and truncate all packets beside the first one.
 
 The general design of the CacheCast server support consists mainly of two parts; 
 the programming interface to the applications and the underlying packet handling 
@@ -334,14 +340,15 @@ the next section while the underlying handling of packets is discussed in
 section \ref{serverunit}.
 
 
-\subsubsection{Details of the API implementation}
+\subsubsection{Details of the API implementation\label{api_impl}}
 
 
 TODO write about CacheCastPid
 
 \begin{footnotesize}
 % -------------- WIDTH ----------------------------]
-\begin{lstlisting}[language=C, frame=single]
+\begin{lstlisting}[language=C]
+--------------------------------------------------
 bool 
 CacheCast::Msend (Ptr<Packet> packet)
 {
@@ -380,27 +387,26 @@ CacheCast::Msend (Ptr<Packet> packet)
 
   return successful; 
 }
-
+--------------------------------------------------
 \end{lstlisting}
 \end{footnotesize}
 
 \subsubsection{Underlying packet handling mechanism\label{serverunit}}
 The tasks of the underlying packet handling mechanism on a CacheCast supported 
-server is to ensure that the packets are put onto the link in a tight chain and 
-to add the CacheCast header to each packet. In the Linux implementation of 
-CacheCast this mechanism is handled by a kernel module located between the 
-network layer and the link layer. As previously explained we have chosen to 
-create a new CacheCastNetDevice in which we can install different packet 
-handling mechanisms. This is where the CacheCast packet modification will 
-happen.
+server is to ensure that the packets are put onto the link in a tight chain, to 
+truncate packets with redundant payload and to add the CacheCast header to each 
+packet. In the Linux implementation of CacheCast this mechanism is handled by a 
+kernel module located between the network layer and the link layer. As 
+previously explained we have chosen to create a new CacheCastNetDevice in which 
+we can install different packet handling mechanisms. This is where the CacheCast 
+packet modification will happen.
 
 On the server an object of a class CacheCastServerUnit is added as a senderUnit 
 to each CacheCastNetDevice. The CacheCastServerUnit::HandlePacket() function 
-does the actual packet modification and its contents is listed below.
+does the actual packet modification and its content is listed below.
 
-\begin{footnotesize}
-% -------------- WIDTH ----------------------------]
-\begin{lstlisting}[language=C, frame=single, showstringspaces=false]
+\begin{lstlisting}[language=C, showstringspaces=false, basicstyle=\footnotesize]
+--------------------------------------------------
 bool
 CacheCastServerUnit::HandlePacket (Ptr<Packet> p)
 {
@@ -441,9 +447,9 @@ CacheCastServerUnit::HandlePacket (Ptr<Packet> p)
   p->AddHeader (cch);
 
   return true;
+--------------------------------------------------
 }
 \end{lstlisting}
-\end{footnotesize}
 
 In the code we first check if the payload 
 has been in the table for more than 1 second, and if it has we invalidate this payload ID from the 
@@ -464,7 +470,7 @@ in tight sequential order on the link. In order to obtain a continuous packet
 train all packets with the same payload should be transmitted in one batch onto 
 the link. In the implementation of CacheCast in Linux this is handled by a 
 separate packet queue in the CacheCast kernel module to overcome the issue of 
-the multiprogramming nature of modern operating system. In ns-3 all code is executed 
+the multiprogramming nature of modern operating systems. In ns-3 all code is executed 
 in sequential order with no interruption. Also computing time on the nodes is 
 not modeled in ns-3. Thus in our implementation we do not need to batch the 
 packets at link layer level. The batching of sockets done in the application domain is 
@@ -476,7 +482,7 @@ the server need only contain one element. In the code we don't even have a
 table, the payload ID is stored as a single variable. This fact also implies that the CSU on 
 the other side of the channel from the server, need only have one slot in its 
 cache. Therefore we always use an index of 0 in the CacheCastHeader appended to 
-the packet.
+the packets.
 
 
 
@@ -485,6 +491,28 @@ the packet.
 
 
 \section{Evaluation}
+We have in the previous sections looked into both the general design of 
+CacheCast and how the system is implemented in the ns-3 network simulator. In 
+this section will will evaluate our implementation to make sure that it is 
+functioning correctly. First we test the server part implementation and then we evaluate the 
+network implementation together with the server support to make sure that the 
+two parts of the CacheCast implementation integrates well with each other.
+
+Before we start with our test cases we introduce a useful feature when doing 
+evaluations. In ns-3 there is a concept called trace sources. A trace source is 
+basically a list of function pointers. At some point in the code the trace 
+source fires, which means that all connected functions are called. A script 
+writer is able to connect to different trace sources to get status information 
+during the simulation. In the CacheCast module there are currently four trace 
+sources called \emph{CcPreSend}, \emph{CcPostSend}, \emph{CcPreRecv} and 
+\emph{CcPostRecv}, which fires before the CMU, after the CMU, before the CSU and 
+after the CSU, respectively.
+
+
+\subsection{Server support evaluation}
+
+
+\subsection{Network support evaluation}
 
 
 \section{Conclusion}
