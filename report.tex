@@ -20,6 +20,7 @@
 \usepackage{varioref}
 \usepackage{color}
 \usepackage{listings}
+\usepackage{epsfig, times}
 
 %\usepackage[cmex10]{amsmath}
 %\usepackage{algorithmic}
@@ -81,9 +82,9 @@ to create ns-3 simulations with the CacheCast technique.
 payload on Internet links. The system is currently implemented in the Linux 
 operating system, the Click modular router and partially in the ns-2 network 
 simulator. In order to test new techniques and protocols destined for the 
-Internet network simulators are often used. A new network simulator called ns-3 has been developed which
+Internet, network simulators are often used. A new network simulator called ns-3 has been developed which
 focuses on more accurate modeling of the functionality of a modern network. The 
-goal of this work is then to implement the CacheCast system in the ns-3 network 
+goal of this work is to implement the CacheCast system in the ns-3 network 
 simulator.
 
 This document is structured in the following way. In section \ref{s1} we give a brief 
@@ -105,15 +106,16 @@ getting to know the CacheCast system design.
 \end{figure}
 
 CacheCast\cite{srebrny} is a new technique of removing redundant data packets on 
-a link. The purpose of CacheCast is 
-to remove as much as possible of the overhead when using many unicast 
-connections for the same data over the same link. In short, CacheCast only sends 
-the packet payload once over a link together with the destination addresses, and 
-then the responsibility lies on the router on the link exit to forward the 
-payload to each client. The CacheCast packet modification can be seen in figure 
+a link. The purpose of CacheCast is to remove as much as possible of the 
+overhead when using many unicast connections for the same data over the same 
+link. In short, CacheCast only sends the packet payload once over a link 
+together with the destination addresses, and then the responsibility lies on the 
+router on the link exit to forward the payload to each client. With this 
+redundancy removal, CacheCast achieves close to multicast performance when the 
+numbers of receivers grow large, without introducing any new protocols into the 
+Internet. An overview of the CacheCast packet modification can be seen in figure 
 \ref{fig_cachecast}.
 
-\subsection{Design}
 As the name implies, CacheCast uses caching to remove the redundant data packets 
 from a link. Three main components are needed to make CacheCast work; support 
 for CacheCast on the server, a component on the link entry called \emph{Cache 
@@ -126,7 +128,7 @@ contains three fields; payload size (\emph{P\_SIZE}), payload id (\emph{P\_ID})
 and cache index (\emph{INDEX}). The details of these fields will be explained in 
 the following sections.
 
-\subsubsection{Server support}
+\subsection{Server support}
 The use of CacheCast demands that the server is aware of CacheCast support 
 in the network, thus a server component is needed. Clients connected to the 
 server requesting the same content is served via the CacheCast component. To be 
@@ -149,7 +151,7 @@ follow a certain pattern. The first packet contains a header and the data,
 whereas the rest of the packets only contain the headers. This structure is 
 called a packet train.
 
-\subsubsection{Network support}
+\subsection{Network support}
 The network support is implemented on a per link basis and consist of two 
 components; the CMU located at the entry of a link, and the CSU located at the exit of 
 that same link. This way CacheCast support need not be deployed in the whole 
@@ -157,9 +159,7 @@ network. It can be deployed incrementally from the server.
 
 Let us now see how this network support is realised through the CMU and the CSU.
  
-
-\begin{description}
-\item [CMU]
+\subsubsection{CMU}
 The CMU's responsibility is to remove the redundant payload and manage 
 the cache in the CSU. For each payload transfered over the link a unique 
 payload ID (P\_ID) is given the payload which identifies, together with 
@@ -174,17 +174,16 @@ corresponds to the slot in the cache in the CSU where the payload will be
 stored. The CMU then adds the CacheCast header to the packet and sends 
 the whole packet onto the link.
 
-\item [CSU]
+\subsubsection{CSU}
 The CSU is the component containing the actual cache. The data in the 
 first packet of the packet train is stored in a slot in this cache specified by 
 the CMU. The job of the CSU is to attach the correct payload to 
 the packets containing only headers. The router will process each packet as 
 normal IP packets.
-\end{description}
 
 
 \section{The ns-3 network simulator\label{s2}}
-The ns-3 simulator is a discrete-event network simulator. It is an open-source project written in C++. ns-2 is a version prior to ns-3, which is a new simulator that does not support the ns-2 APIs. Some models from ns-2 have already been ported from ns-2 to ns-3, and some has not yet been implemented in ns-3. Version of ns-3 we have used is ns-3.13. 
+The ns-3 simulator\cite{ns-3} is a discrete-event network simulator. It is an open-source project written in C++. ns-2 is a version prior to ns-3, which is a new simulator that does not support the ns-2 APIs. Some models from ns-2 have already been ported from ns-2 to ns-3, and some has not yet been implemented in ns-3. Version of ns-3 we have used is ns-3.13. 
 
 \subsection*{Abstractions}
 Implementation in ns-3 is based on abstraction, so it can be simplified. These abstraction have differences from the network as we know in reality. Before we start explaining our implementation of CacheCast in ns-3, it is important to understand abstractions and terms that are used in ns-3.
@@ -239,7 +238,7 @@ In order to maintain the container of sockets, some facilities are provided to t
  
 
 \begin{footnotesize}
-\begin{lstlisting}[language=C, caption = Example of usage of CasheCast API]
+\begin{lstlisting}[language=C, caption = Example of usage of CacheCast API]
 --------------------------------------------------
 std::vector<Address>::const_iterator it;
 
@@ -509,7 +508,7 @@ to each CacheCastNetDevice. The CacheCastServerUnit::HandlePacket() function
 does the actual packet modification and its content is listed below.
 
 \begin{lstlisting}[language=C, showstringspaces=false, basicstyle=\footnotesize, 
-caption=HandlePacket() function in CacheCastServerUnit]
+caption=HandlePacket() function in CacheCastServerUnit, frame=tb]
 --------------------------------------------------
 bool
 CacheCastServerUnit::HandlePacket (Ptr<Packet> p)
@@ -624,7 +623,10 @@ The conclusion goes here.
 
 \subsection{Future work}
 DCCP
+
 csma-netdevice?
+
+error on first packet lost if same PID
 
 
 
