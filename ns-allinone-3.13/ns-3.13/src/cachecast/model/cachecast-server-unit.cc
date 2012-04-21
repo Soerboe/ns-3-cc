@@ -16,7 +16,7 @@ NS_OBJECT_ENSURE_REGISTERED (CacheCastServerUnit);
 
 CacheCastServerUnit::CacheCastServerUnit ()
   : m_payloadId (0),
-    m_timeStamp (0.0),
+    m_timeStamp (-TIMEOUT - 1.0),
     m_invalid (true)
 {
   NS_LOG_FUNCTION_NOARGS ();
@@ -45,7 +45,7 @@ CacheCastServerUnit::HandlePacket (Ptr<Packet> p)
   CacheCastHeader cch (tag.GetPayloadId (), tag.GetPayloadSize (), 0);
 
   /* Invalidate the current payload ID after one second */
-  if (Simulator::Now ().GetSeconds () - m_timeStamp > 1.0)
+  if (Simulator::Now ().GetSeconds () - m_timeStamp > TIMEOUT)
   {
     NS_LOG_DEBUG ("CacheCast server table invalidated");
     m_invalid = true;
