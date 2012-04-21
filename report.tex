@@ -184,7 +184,7 @@ normal IP packets.
 
 
 \section{The ns-3 network simulator\label{s2}}
-The ns-3 simulator is a discrete-event network simulator. It is an open-source project written in C++. ns-2 is a version prior to ns-3, which is a new simulator that does not support the ns-2 APIs. Some models from ns-2 have already been ported from ns-2 to ns-3, and some has not yet been implemented in ns-3. Version of ns-3 we have used is ns-3.13. 
+The ns-3 simulator is a discrete-event network simulator. It is an open-source project written in C++ and is intended for educational and research. Main purpose for usage of this tool is to simulate different scenarios network which are implemented by user. ns-2 is a version prior to ns-3, which is a new simulator that does not support the ns-2 APIs. Some models from ns-2 have already been ported from ns-2 to ns-3, and some has not yet been implemented in ns-3. Version of ns-3 we have used is ns-3.13. 
 
 \subsection*{Abstractions}
 Implementation in ns-3 is based on abstraction, so it can be simplified. These abstraction have differences from the network as we know in reality. Before we start explaining our implementation of CacheCast in ns-3, it is important to understand abstractions and terms that are used in ns-3.
@@ -267,7 +267,8 @@ if(!cc.Msend(packet)){
 \end{footnotesize}
 
 \subsection{Helpers}
-Helpers are used to setup the Server unit / CMU and CSU on nodes before channel between these units is defined. In both helpers, Install function takes pointer for two nodes as arguments. The only difference between these two helpers is that CacheCastServerHelper is intended to be used to define characteristics of connections between Serverunit and CSU and CacheCastHelper to define CMU and CSU. First, CacheCastNetDevices are created for each of these nodes. Server unit, CMU or CSU are then added to these devices based on type of node that are being installed. These devices are then attached to CacheCastChannel before they are added into a container of devices.    
+Helpers are used to setup the Server Unit / CMU and CSU on nodes before channel between these units are defined. In both helpers, Install function takes pointer for two nodes as arguments. The only difference between these two helpers is that CacheCastServerHelper is intended to be used to define characteristics of connections between Serverunit and CSU and CacheCastHelper is used to define CMU and CSU. First, CacheCastNetDevices are created for each of these nodes. %Todo Mer info
+Server unit, CMU or CSU are then added to these devices based on type of node that are being installed. These devices are then attached to CacheCastChannel before they are added into a container of NetDevices.    
 
 
 \section{Implementation details\label{s4}} % HOW IT WORKS
