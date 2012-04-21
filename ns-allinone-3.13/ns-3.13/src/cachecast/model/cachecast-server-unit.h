@@ -4,6 +4,8 @@
 
 #include "cachecast-unit.h"
 
+#define TIMEOUT 1.0
+
 namespace ns3 {
 
 /**
