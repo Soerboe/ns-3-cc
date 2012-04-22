@@ -7,9 +7,8 @@
 #include "ns3/config.h"
 #include "ns3/packet.h"
 #include "ns3/names.h"
-// #include "ns3/mpi-interface.h"
-// #include "ns3/mpi-receiver.h"
 #include "ns3/trace-helper.h"
+#include "ns3/uinteger.h"
 
 #include "cachecast-helper.h"
 #include "ns3/cachecast-net-device.h"
@@ -26,6 +25,8 @@ CacheCastHelper::CacheCastHelper ()
   m_deviceFactory.SetTypeId ("ns3::CacheCastNetDevice");
   m_queueFactory.SetTypeId ("ns3::DropTailQueue");
   m_channelFactory.SetTypeId ("ns3::CacheCastChannel");
+  m_cmuFactory.SetTypeId ("ns3::CacheManagementUnit");
+  m_csuFactory.SetTypeId ("ns3::CacheStoreUnit");
 }
 
 void 
@@ -52,6 +53,13 @@ void
 CacheCastHelper::SetChannelAttribute (std::string n1, const AttributeValue &v1)
 {
   m_channelFactory.Set (n1, v1);
+}
+
+void
+CacheCastHelper::SetUnitAttribute (std::string name, const AttributeValue &value)
+{
+  m_cmuFactory.Set (name, value);
+  m_csuFactory.Set (name, value);
 }
 
 void 
@@ -205,11 +213,7 @@ CacheCastHelper::Install (Ptr<Node> n1, Ptr<Node> n2)
 
   /* Setup node 1 */
   Ptr<CacheCastNetDevice> dev1 = m_deviceFactory.Create<CacheCastNetDevice> ();
-  Ptr<CacheManagementUnit> cmu = Create<CacheManagementUnit> ();
-  
-  // TODO Change
-  cmu->SetSize(10);
-  
+  Ptr<CacheManagementUnit> cmu = m_cmuFactory.Create<CacheManagementUnit> ();
   dev1->AddSenderUnit (cmu);
   Ptr<Queue> queue1 = m_queueFactory.Create<Queue> ();
   dev1->SetAddress (Mac48Address::Allocate ());
@@ -218,13 +222,7 @@ CacheCastHelper::Install (Ptr<Node> n1, Ptr<Node> n2)
 
   /* Setup node 2 */
   Ptr<CacheCastNetDevice> dev2 = m_deviceFactory.Create<CacheCastNetDevice> ();
-  Ptr<CacheStoreUnit> csu = Create<CacheStoreUnit> ();
-  
-  // TODO Change these two
-  csu->SetSize(10);
-  // TODO 
-  csu->SetSlotSize (1500);
-
+  Ptr<CacheStoreUnit> csu = m_csuFactory.Create<CacheStoreUnit> ();
   dev2->AddReceiverUnit (csu);
   Ptr<Queue> queue2 = m_queueFactory.Create<Queue> ();
   dev2->SetAddress (Mac48Address::Allocate ());
@@ -245,6 +243,28 @@ CacheCastHelper::Install (NodeContainer c)
 {
   NS_ASSERT (c.GetN () == 2);
   return Install (c.Get (0), c.Get (1));
+}
+
+NetDeviceContainer 
+CacheCastHelper::Install (Ptr<Node> a, std::string bName)
+{
+  Ptr<Node> b = Names::Find<Node> (bName);
+  return Install (a, b);
+}
+
+NetDeviceContainer 
+CacheCastHelper::Install (std::string aName, Ptr<Node> b)
+{
+  Ptr<Node> a = Names::Find<Node> (aName);
+  return Install (a, b);
+}
+
+NetDeviceContainer 
+CacheCastHelper::Install (std::string aName, std::string bName)
+{
+  Ptr<Node> a = Names::Find<Node> (aName);
+  Ptr<Node> b = Names::Find<Node> (bName);
+  return Install (a, b);
 }
 
 } // namespace ns3
