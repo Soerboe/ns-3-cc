@@ -31,36 +31,13 @@ main (int argc, char *argv[])
   LogComponentEnable ("UdpEchoServerApplication", LOG_LEVEL_INFO);
   LogComponentEnable ("CacheCastNetDevice", LOG_LEVEL_INFO);
 
-//   bool verbose = true;
-// 
-//   CommandLine cmd;
-//   cmd.AddValue ("verbose", "Tell application to log if true", verbose);
-//   cmd.Parse (argc,argv);
-
-
-// Ptr<Packet> packet = Create<Packet> (1000);
-// CacheCastTag cct (111, 222);
-// FlowIdTag fid (999);
-// 
-// packet->AddPacketTag (cct);
-// packet->AddPacketTag (fid);
-// 
-// CacheCastTag c;
-// packet->RemovePacketTag(c);
-// 
-// c.Print(std::cerr);
-// 
-// return 0;
-
   NodeContainer nodes;
   nodes.Create (3);
 
   /* Set up channel n0 <-> n1 */
   CacheCastServerHelper ccHelper;
-//   pointToPoint.SetDeviceAttribute ("DataRate", StringValue ("5Mbps"));
   ccHelper.SetDeviceAttribute ("DataRate", StringValue ("100Kbps"));
   ccHelper.SetChannelAttribute ("Delay", StringValue ("2ms"));
-
   NetDeviceContainer devices1 = ccHelper.Install (nodes.Get(0), nodes.Get(1));
 
   /* Set up channel n0 <-> n2 */

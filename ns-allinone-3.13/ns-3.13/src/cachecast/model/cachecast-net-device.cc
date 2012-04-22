@@ -223,6 +223,13 @@ CacheCastNetDevice::SetDataRate (DataRate bps)
   m_bps = bps;
 }
 
+DataRate
+CacheCastNetDevice::GetDataRate () const
+{
+  NS_LOG_FUNCTION_NOARGS ();
+  return m_bps;
+}
+
 void
 CacheCastNetDevice::SetInterframeGap (Time t)
 {
@@ -247,38 +254,16 @@ CacheCastNetDevice::TransmitStart (Ptr<Packet> p)
    * which modifies the packets before it is transmitted.
    * Only CacheCast packets are handled */
   CacheCastTag ccTag;
-        p->Print (std::cerr);
-  
   if (m_senderUnit && p->PeekPacketTag (ccTag))
   {
     NS_LOG_LOGIC ("CacheCast: Sender unit handles packet");
     m_preSenderUnitTrace (p);
-
     PppHeader ppp;
     p->RemoveHeader (ppp);
-
-
-    bool ret = m_senderUnit->HandlePacket (p);
-
-//     std::cerr << "HEIHEO\n";
-    // TODO remove
-//     CacheCastHeader cch;
-//     if (p->PeekHeader (cch) == 0) {
-//       p->AddHeader (cch);
-//       std::cerr << "DDDDDDDDDDDDDDDDDDDDDDDDDDDD\n";
-//     }
-
+    m_senderUnit->HandlePacket (p);
     p->AddHeader (ppp);
-
-    if (!ret) {
-      //DO SOMETHING MAYBE
-      ;
-    }
-
     m_postSenderUnitTrace (p);
   }
-//         p->Print (std::cerr);
-
 
   m_txMachineState = BUSY;
   m_currentPkt = p;
@@ -388,35 +373,14 @@ CacheCastNetDevice::Receive (Ptr<Packet> packet)
        * which modifies the packets when they are received.
        * Only CacheCast packets are handled */
       CacheCastHeader cch;
-//         packet->Print (std::cerr);
       if (m_receiverUnit && packet->PeekHeader (cch))
       {
         NS_LOG_LOGIC ("CacheCast: Receiver unit handles packet");
         m_preReceiverUnitTrace (packet);
-      
         PppHeader ppp;
         packet->RemoveHeader (ppp);
-
         bool ret = m_receiverUnit->HandlePacket (packet);
-        
-        
-
-//         packet->RemoveHeader (ccHrd);
-        
-        // TODO remove when CSU is finished
-        
-//         if (packet->PeekHeader (cch)
-
-//         packet->RemoveHeader (cch);
-//         CacheCastTag cct;
-//         if (packet->PeekPacketTag (cct))
-//           std::cerr << "HEHEHEHHEHEHEHEHEEH\n";
-//         else
-//           packet->AddPacketTag (cct);
-
         packet->AddHeader (ppp);
-
-//         std::cerr << "SIZE" << packet->GetSize() << "\n";
 
         /* Packet should be dropped */
         if (ret == false)
@@ -424,8 +388,6 @@ CacheCastNetDevice::Receive (Ptr<Packet> packet)
 
         m_postReceiverUnitTrace (packet);
       }
-
-//         packet->Print (std::cerr);
 
       m_snifferTrace (packet);
       m_promiscSnifferTrace (packet);

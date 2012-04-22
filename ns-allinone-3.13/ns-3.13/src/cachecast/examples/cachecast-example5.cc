@@ -41,8 +41,30 @@ using namespace ns3;
 static void
 TraceCacheCast (Ptr<OutputStreamWrapper> stream, Ptr<const Packet> p)
 {
+  Ptr<Packet> pp = p->Copy();
+  bool cc = false;
+  PppHeader ppp;
+  pp->RemoveHeader (ppp);
+
+  CacheCastHeader cch;
+  pp->PeekHeader (cch);
+  if (cch.GetPayloadId() == 0 || cch.GetPayloadId() == 1) {
+    pp->RemoveHeader (cch);
+    cc = true;
+  }
+
+  Ipv4Header ipHdr;
+  uint32_t ipRead = pp->PeekHeader (ipHdr);
+  NS_ASSERT (ipRead);
+  uint32_t addr = ipHdr.GetSource ().Get ();
+
   *stream->GetStream () << Simulator::Now ().GetSeconds () << "\t" 
-    << p->GetSize () << "\n"; // << "\t" << p << std::endl;
+//     << p->GetSize () << "\n"; // << "\t" << p << std::endl;
+    << p->GetSize () << "\t" << ipHdr.GetSource () << "\t" << ipHdr.GetDestination () << std::endl;
+
+  if (cc)
+    pp->AddHeader (cch);
+  pp->AddHeader (ppp);
 }
 
 int 
@@ -50,8 +72,7 @@ main (int argc, char *argv[])
 {
   LogComponentEnable ("CacheCastTestApplication", LOG_LEVEL_ALL);
   LogComponentEnable ("CacheCastServerUnit", LOG_LEVEL_ALL);
-  LogComponentEnable ("CacheCastPid", LOG_LEVEL_ALL);
-  LogComponentEnable ("UdpEchoServerApplication", LOG_LEVEL_INFO);
+//   LogComponentEnable ("CacheCastPid", LOG_LEVEL_ALL);
   LogComponentEnable ("CacheCastNetDevice", LOG_LEVEL_INFO);
 //   LogComponentEnable ("CacheStoreUnit", LOG_LEVEL_ALL);
 //   LogComponentEnable ("CacheManagementUnit", LOG_LEVEL_ALL);
@@ -67,12 +88,18 @@ main (int argc, char *argv[])
   NetDeviceContainer devices1 = ccServerHelper.Install (nodes.Get(0), nodes.Get(2));
 
   /* Set up channel n1 <-> n2 */
-  ccServerHelper.SetDeviceAttribute ("DataRate", StringValue ("1Mbps"));
+  ccServerHelper.SetDeviceAttribute ("DataRate", StringValue ("2Mbps"));
   ccServerHelper.SetChannelAttribute ("Delay", StringValue ("2ms"));
   NetDeviceContainer devices2 = ccServerHelper.Install (nodes.Get(1), nodes.Get(2));
 
   /* Set up channel n2 <-> n3 */
   CacheCastHelper ccHelper;
+  // 10 ms of link traffic with 1 KB packets => number of elements in cache/table
+//   uint64_t size = DataRate ("1Gbps").GetBitRate () / 8 / 100 / 1024;
+
+  ccHelper.SetUnitAttribute ("Size", UintegerValue (10));
+  ccHelper.SetUnitAttribute ("SlotSize", UintegerValue (1000));
+  
   ccHelper.SetDeviceAttribute ("DataRate", StringValue ("1Mbps"));
   ccHelper.SetChannelAttribute ("Delay", StringValue ("5ms"));
   NetDeviceContainer devices3 = ccHelper.Install (nodes.Get(2), nodes.Get(3));
@@ -137,22 +164,22 @@ main (int argc, char *argv[])
   app0->AddAddress (addr5);
   app0->AddAddress (addr5);
   app0->AddAddress (addr5);
-//   app0->AddAddress (addr6);
-//   app0->AddAddress (addr6);
+  app0->AddAddress (addr6);
+  app0->AddAddress (addr6);
   nodes.Get (0)->AddApplication (app0);
   app0->SetStartTime (Seconds (1.0));
   app0->SetStopTime (Seconds (10.0));
 
   /* Set up server 1 application */
-//   Ptr<CacheCastTestApplication> app1 = Create<CacheCastTestApplication> ();
-//   app1->SetPacketSize (600);
-//   app1->AddAddress (addr5);
-//   app1->AddAddress (addr6);
-//   app1->AddAddress (addr6);
-//   app1->AddAddress (addr6);
-//   nodes.Get (1)->AddApplication (app1);
-//   app1->SetStartTime (Seconds (1.0));
-//   app1->SetStopTime (Seconds (10.0));
+  Ptr<CacheCastTestApplication> app1 = Create<CacheCastTestApplication> ();
+  app1->SetPacketSize (900);
+  app1->AddAddress (addr5);
+  app1->AddAddress (addr6);
+  app1->AddAddress (addr6);
+  app1->AddAddress (addr6);
+  nodes.Get (1)->AddApplication (app1);
+  app1->SetStartTime (Seconds (1.0));
+  app1->SetStopTime (Seconds (10.0));
 
 //   Packet::EnablePrinting();
 //   Packet::EnableChecking();

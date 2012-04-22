@@ -90,16 +90,6 @@ main (int argc, char *argv[])
   address.SetBase ("10.1.4.0", "255.255.255.0");
   Ipv4InterfaceContainer interfaces4 = address.Assign (devices4);
 
-//   UdpEchoServerHelper echoServer1 (PORT);
-//   ApplicationContainer serverApps1 = echoServer1.Install (nodes.Get (3));
-//   serverApps1.Start (Seconds (1.0));
-//   serverApps1.Stop (Seconds (10.0));
-// 
-//   UdpEchoServerHelper echoServer2 (PORT);
-//   ApplicationContainer serverApps2 = echoServer2.Install (nodes.Get (4));
-//   serverApps2.Start (Seconds (1.0));
-//   serverApps2.Stop (Seconds (10.0));
-
   /* Set up client applications */
   Ptr<CacheCastTestClient> client1 = Create<CacheCastTestClient> ();
   client1->SetPort (PORT);
@@ -135,8 +125,8 @@ main (int argc, char *argv[])
   Ipv4GlobalRoutingHelper::PopulateRoutingTables ();
 
   AsciiTraceHelper asciiTraceHelper;
-  Ptr<OutputStreamWrapper> stream = asciiTraceHelper.CreateFileStream ("cachecast.txt");
-  devices1.Get (1)->TraceConnectWithoutContext ("CcPreRecv", MakeBoundCallback (&PreCacheCast, stream));
+  Ptr<OutputStreamWrapper> stream1 = asciiTraceHelper.CreateFileStream ("cachecast1.txt");
+  devices1.Get (1)->TraceConnectWithoutContext ("CcPreRecv", MakeBoundCallback (&PreCacheCast, stream1));
 
   Ptr<OutputStreamWrapper> stream2 = asciiTraceHelper.CreateFileStream ("cachecast2.txt");
   devices1.Get (1)->TraceConnectWithoutContext ("CcPostRecv", MakeBoundCallback (&PreCacheCast, stream2));

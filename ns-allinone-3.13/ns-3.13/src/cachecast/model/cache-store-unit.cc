@@ -74,10 +74,6 @@ CacheStoreUnit::HandlePacket (Ptr<Packet> p)
     m_cache[cch.GetIndex()].payloadSize = cch.GetPayloadSize(); 
   }
   
-  /*
-  CacheCastTag cct
-  p->AddPacketTag(cct);   
-  */
   return true;
 }
 

@@ -44,12 +44,6 @@ CacheCastTestApplication::SetPacketSize (uint32_t packetSize)
 }
 
 void
-CacheCastTestApplication::SocketFailed (uint32_t socketIndex)
-{
-  NS_LOG_INFO (socketIndex << "hurray\n");
-}
-
-void
 CacheCastTestApplication::StartApplication (void)
 {
   NS_LOG_FUNCTION_NOARGS ();
@@ -64,20 +58,18 @@ CacheCastTestApplication::StartApplication (void)
     cc.AddSocket (socket);
   }
  
-  CacheCast cc2;
-
-  for (it = m_address.begin(); it < m_address.end(); ++it) {
-    Ptr<Socket> socket = Socket::CreateSocket (GetNode (), TypeId::LookupByName ("ns3::UdpSocketFactory"));
-    socket->Bind();
-    socket->Connect (*it);
-    cc2.AddSocket (socket);
-  }
+//   CacheCast cc2;
+// 
+//   for (it = m_address.begin(); it < m_address.end(); ++it) {
+//     Ptr<Socket> socket = Socket::CreateSocket (GetNode (), TypeId::LookupByName ("ns3::UdpSocketFactory"));
+//     socket->Bind();
+//     socket->Connect (*it);
+//     cc2.AddSocket (socket);
+//   }
 //    
 //     cc.Merge(cc2);
 
   Ptr<Packet> packet = Create<Packet> (m_packetSize);
-//   Ptr<Packet> packet = Create<Packet> (1472);
-//   NS_LOG_INFO ("Packet size: " << packet->GetSize ());
 
     if(!cc.Msend(packet)){
 //         CacheCast::Iterator vItr = cc.BeginFailedSockets();
@@ -91,9 +83,7 @@ CacheCastTestApplication::StartApplication (void)
 //   Ptr<Packet> p = Create<Packet> (1400);
 //   cc2.Msend (p);
 
-//   Ptr<Packet> packet2 = Create<Packet> (900);
-//   cc.Msend (packet2);
-// 
+
 //   static int i = 0;
 // 
 //   if (i == 0) {
@@ -101,13 +91,6 @@ CacheCastTestApplication::StartApplication (void)
 //     Simulator::Schedule (t, &CacheCastTestApplication::StartApplication, this);
 //   }
 //   i++;
-
-
-
-
-// //       NS_LOG_INFO ("Sent " << packet->GetSize () << " bytes to " <<
-// //           InetSocketAddress::ConvertFrom (m_address).GetIpv4 ());
-//     }
 
 }
 

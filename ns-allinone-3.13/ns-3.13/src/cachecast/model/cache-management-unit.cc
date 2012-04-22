@@ -16,6 +16,7 @@ NS_OBJECT_ENSURE_REGISTERED (CacheManagementUnit);
 
 CacheManagementUnit::CacheManagementUnit ()
   : m_size (0),
+    m_slotSize (0),
     m_currIndex (0)
 {
   NS_LOG_FUNCTION_NOARGS ();
@@ -124,6 +125,11 @@ CacheManagementUnit::GetTypeId (void)
                    "The number of elements in the table.",
                    UintegerValue (1000),
                    MakeUintegerAccessor (&CacheManagementUnit::m_size),
+                   MakeUintegerChecker<uint32_t> ())
+    .AddAttribute ("SlotSize",
+                   "The size of each slot in the CSU cache.",
+                   UintegerValue (1024),
+                   MakeUintegerAccessor (&CacheManagementUnit::m_slotSize),
                    MakeUintegerChecker<uint32_t> ())
   ;
   return tid;

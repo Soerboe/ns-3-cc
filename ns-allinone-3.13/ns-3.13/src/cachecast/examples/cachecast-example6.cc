@@ -219,8 +219,7 @@ main (int argc, char *argv[])
   CacheCastServerHelper ccServerHelper;
   ccServerHelper.SetDeviceAttribute ("DataRate", StringValue ("2Mbps"));
   ccServerHelper.SetChannelAttribute ("Delay", StringValue ("2ms"));
-  //TODO
-  NetDeviceContainer devices1 = ccServerHelper.Install (nodes.Get(0), nodes.Get(5));
+  NetDeviceContainer devices1 = ccServerHelper.Install (nodes.Get(0), nodes.Get(2));
 
   /* Set up channel n1 <-> n2 */
   ccServerHelper.SetDeviceAttribute ("DataRate", StringValue ("1Mbps"));
@@ -241,8 +240,7 @@ main (int argc, char *argv[])
   /* Set up channel n4 <-> n5 */
   ccHelper.SetDeviceAttribute ("DataRate", StringValue ("2Mbps"));
   ccHelper.SetChannelAttribute ("Delay", StringValue ("6ms"));
-  //TODO
-  NetDeviceContainer devices5 = ccHelper.Install (nodes.Get(4), nodes.Get(6));
+  NetDeviceContainer devices5 = ccHelper.Install (nodes.Get(4), nodes.Get(5));
 
   /* Set up channel n4 <-> n6 */
   ccHelper.SetDeviceAttribute ("DataRate", StringValue ("1Mbps"));
@@ -288,8 +286,7 @@ main (int argc, char *argv[])
 
   /* Set up server 0 application */
   Ptr<CacheCastTestServer> app0 = Create<CacheCastTestServer> ();
-  //TODO
-  Address addr5 (InetSocketAddress (interfaces1.GetAddress (1), PORT));
+  Address addr5 (InetSocketAddress (interfaces5.GetAddress (1), PORT));
   Address addr6 (InetSocketAddress (interfaces6.GetAddress (1), PORT));
   app0->SetPacketSize (1000);
   app0->AddAddress (addr5);

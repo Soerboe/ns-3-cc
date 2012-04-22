@@ -20,8 +20,7 @@ public:
   /**
    * /brief Construct an empty CacheStoreUnit
    */
-    
-    CacheStoreUnit ();
+  CacheStoreUnit ();
     
   /** 
    * Documented in CacheCastUnit 

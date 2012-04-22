@@ -13,10 +13,6 @@
 
 namespace ns3 {
 
-// class Queue;
-// class NetDevice;
-// class Node;
-
 /**
  * \brief Build a set of CacheCastNetDevice objects
  *
@@ -105,28 +101,28 @@ public:
   NetDeviceContainer Install (NodeContainer c);
 
   /**
-   * \param a first node
-   * \param bName name of second node
+   * \param a server node
+   * \param bName name of router node
    *
    * Saves you from having to construct a temporary NodeContainer.
    */
-//   NetDeviceContainer Install (Ptr<Node> a, std::string bName);
+  NetDeviceContainer Install (Ptr<Node> a, std::string bName);
 
   /**
-   * \param aName Name of first node
-   * \param b second node
+   * \param aName Name of server node
+   * \param b router node
    *
    * Saves you from having to construct a temporary NodeContainer.
    */
-//   NetDeviceContainer Install (std::string aName, Ptr<Node> b);
+  NetDeviceContainer Install (std::string aName, Ptr<Node> b);
 
   /**
-   * \param aNode Name of first node
-   * \param bNode Name of second node
+   * \param aNode Name of server node
+   * \param bNode Name of router node
    *
    * Saves you from having to construct a temporary NodeContainer.
    */
-//   NetDeviceContainer Install (std::string aNode, std::string bNode);
+  NetDeviceContainer Install (std::string aNode, std::string bNode);
 
 private:
   /**

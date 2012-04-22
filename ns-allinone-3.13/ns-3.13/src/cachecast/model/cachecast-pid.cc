@@ -40,8 +40,6 @@ CacheCastPid::GetPayloadId () const
   return m_payloadId;
 }
 
-
-//opprett aggregated object in node CacheCastPid
 uint32_t
 CacheCastPid::CalculateNewPayloadId ()
 {
