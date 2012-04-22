@@ -83,6 +83,15 @@ public:
   void SetChannelAttribute (std::string name, const AttributeValue &value);
 
   /**
+   * Set an attribute value for the CMU and CSU created by the
+   * helper.
+   *
+   * \param name the name of the attribute to set
+   * \param value the value of the attribute to set
+   */
+  void SetUnitAttribute (std::string name, const AttributeValue &value);
+
+  /**
    * This method creates a ns3::CacheCastNetDevice and adds
    * a CacheManagementUnit to the first node,
    * creates a ns3::CacheCastNetDevice and adds a 
@@ -107,7 +116,7 @@ public:
    *
    * Saves you from having to construct a temporary NodeContainer.
    */
-//   NetDeviceContainer Install (Ptr<Node> a, std::string bName);
+  NetDeviceContainer Install (Ptr<Node> a, std::string bName);
 
   /**
    * \param aName Name of first node
@@ -115,7 +124,7 @@ public:
    *
    * Saves you from having to construct a temporary NodeContainer.
    */
-//   NetDeviceContainer Install (std::string aName, Ptr<Node> b);
+  NetDeviceContainer Install (std::string aName, Ptr<Node> b);
 
   /**
    * \param aNode Name of first node
@@ -123,7 +132,7 @@ public:
    *
    * Saves you from having to construct a temporary NodeContainer.
    */
-//   NetDeviceContainer Install (std::string aNode, std::string bNode);
+  NetDeviceContainer Install (std::string aNode, std::string bNode);
 
 private:
   /**
@@ -159,6 +168,8 @@ private:
   ObjectFactory m_deviceFactory;
   ObjectFactory m_queueFactory;
   ObjectFactory m_channelFactory;
+  ObjectFactory m_cmuFactory;
+  ObjectFactory m_csuFactory;
 };
 
 } // namespace ns3

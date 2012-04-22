@@ -64,11 +64,6 @@ CacheCast::RemoveSocket(Ptr<Socket> socket){
 bool 
 CacheCast::Msend (Ptr<Packet> packet)
 {
-
-  // TODO vi trenger vel ikke socket_index naa siden feilhaantering skjer i Msend()
-  // og SetFailedSocket () er vel heller ikke noedvendig
-
-  uint32_t socket_index = 0;
   bool successful = true;
   std::vector<Ptr <Socket> >::iterator socket;
 
@@ -84,30 +79,22 @@ CacheCast::Msend (Ptr<Packet> packet)
     // if DCCP gets supported handle it also
     NS_ASSERT_MSG ((*socket)->GetSocketType () == Socket::NS3_SOCK_DGRAM, "CacheCast supports only UDP sockets");
     
-    // TODO check if socket's NetDevice is a CacheCastNetDevice and only add tag if it is
-
-    /*Ptr<NetDevice> net_device = (*socket)->GetBoundNetDevice ();
-    (*net_device)->getTypeID() == TypeId ("ns3::CacheCastNetDevice"); */
-//     Ptr<Packet> p = Copy<Packet> (packet); 
     Ptr<Packet> p = packet->Copy (); 
-
-
     CacheCastTag tag (payloadId, p->GetSize ());
     p->AddPacketTag (tag);        
 
-    if((*socket)->Send(p) < 0)
+    if ((*socket)->Send(p) < 0)
     {
+      m_failed.push_back (*socket);
       successful = false;
-      SetFailedSocket (socket_index);
     }
-    socket_index++; 
   }
 
   return successful; 
 }
 
 void
-CacheCast::Merge(CacheCast &cc)
+CacheCast::Merge(CacheCast cc)
 {
   std::vector<Ptr<Socket> >::iterator vItr = cc.m_sockets.begin();
   while ( vItr != cc.m_sockets.end() )
@@ -115,11 +102,6 @@ CacheCast::Merge(CacheCast &cc)
     AddSocket((*vItr));
     vItr++;
   } 
-}
-
-void
-CacheCast::SetFailedSocket (uint32_t i){
-  m_failed.push_back (m_sockets[i]);
 }
 
 TypeId

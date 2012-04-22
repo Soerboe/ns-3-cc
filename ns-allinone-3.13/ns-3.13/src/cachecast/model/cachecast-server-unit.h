@@ -29,22 +29,6 @@ public:
   bool HandlePacket (Ptr<Packet> p);
 
 private:
-//   struct TableItem
-//   {
-//     uint32_t payloadId;
-//     double timeStamp;
-//     bool invalid;
-// 
-//     TableItem (uint32_t _payloadId, double _timeStamp, bool _invalid)
-//     {
-//       payloadId = _payloadId;
-//       timeStamp = _timeStamp;
-//       invalid = _invalid;
-//     }
-//   };
-// 
-//   TableItem m_table;
-
   uint32_t m_payloadId;
   double m_timeStamp;
   bool m_invalid;

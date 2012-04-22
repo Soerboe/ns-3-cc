@@ -7,8 +7,6 @@
 #include "ns3/config.h"
 #include "ns3/packet.h"
 #include "ns3/names.h"
-// #include "ns3/mpi-interface.h"
-// #include "ns3/mpi-receiver.h"
 #include "ns3/trace-helper.h"
 
 #include "cachecast-server-helper.h"
@@ -246,6 +244,28 @@ CacheCastServerHelper::Install (NodeContainer c)
 {
   NS_ASSERT (c.GetN () == 2);
   return Install (c.Get (0), c.Get (1));
+}
+
+NetDeviceContainer 
+CacheCastServerHelper::Install (Ptr<Node> a, std::string bName)
+{
+  Ptr<Node> b = Names::Find<Node> (bName);
+  return Install (a, b);
+}
+
+NetDeviceContainer 
+CacheCastServerHelper::Install (std::string aName, Ptr<Node> b)
+{
+  Ptr<Node> a = Names::Find<Node> (aName);
+  return Install (a, b);
+}
+
+NetDeviceContainer 
+CacheCastServerHelper::Install (std::string aName, std::string bName)
+{
+  Ptr<Node> a = Names::Find<Node> (aName);
+  Ptr<Node> b = Names::Find<Node> (bName);
+  return Install (a, b);
 }
 
 } // namespace ns3
