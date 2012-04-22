@@ -279,10 +279,12 @@ In CacheCache, applications stands for creating and binding sockets. CacheCast A
 is responsible for maintaining these sockets. When a socket is binded, it is added in the socket 
 container simply by using function AddSocket. 
 
-Packet is sent to all socket in the socket container by using function Msend. This function 
-return a bool depending on if packet was delivered succesful to all sockets in the container. 
-There is no possibility for applications to know which one of socket did failed during the sending 
- 
+Packet is sent to all socket in the socket container by using function Msend.  
+There is no possibility for applications to have a complete overview of which one of socket did 
+failed by using Msend function only. As a workaround for this problem, we have implemented this function 
+to return a bool depending on if packet was delivered succesful to all sockets in the container.
+
+
 \begin{footnotesize}
 \begin{lstlisting}[language=C, caption = Example of usage of CacheCast API]
 --------------------------------------------------
