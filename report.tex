@@ -159,7 +159,7 @@ network. It can be deployed incrementally from the server.
 
 Let us now see how this network support is realised through the CMU and the CSU.
  
-\subsubsection{CMU}
+\subsubsection{CMU\label{cmu}}
 The CMU's responsibility is to remove the redundant payload and manage 
 the cache in the CSU. For each payload transfered over the link a unique 
 payload ID (P\_ID) is given the payload which identifies, together with 
@@ -501,8 +501,9 @@ CacheCast::Msend (Ptr<Packet> packet)
 \end{lstlisting}
 \end{footnotesize}
 
+
 \subsubsection{Underlying packet handling mechanism\label{serverunit}}
-The tasks of the underlying packet handling mechanism on a CacheCast supported 
+The tasks of the underlying packet handling mechanism in a CacheCast supported 
 server is to ensure that the packets are put onto the link in a tight chain, to 
 truncate packets with redundant payload and to add the CacheCast header to each 
 packet. In the Linux implementation of CacheCast this mechanism is handled by a 
@@ -513,16 +514,15 @@ packet modification will happen.
 
 On the server an object of a class CacheCastServerUnit is added as a senderUnit 
 to each CacheCastNetDevice. The CacheCastServerUnit::HandlePacket() function 
-does the actual packet modification and its content is listed below.
+does the actual packet modification and its content is listed in listing 
+\ref{ccsu} below.
 
 \begin{lstlisting}[language=C, showstringspaces=false, basicstyle=\footnotesize, 
-caption=HandlePacket() function in CacheCastServerUnit, frame=tb]
+caption=HandlePacket() function in CacheCastServerUnit, frame=tb, label=ccsu]
 --------------------------------------------------
 bool
 CacheCastServerUnit::HandlePacket (Ptr<Packet> p)
 {
-  NS_LOG_FUNCTION (p);
-
   CacheCastTag tag;
   bool hasTag = p->RemovePacketTag (tag);
   NS_ASSERT_MSG (hasTag, "No CacheCast packet tag");
@@ -533,8 +533,7 @@ CacheCastServerUnit::HandlePacket (Ptr<Packet> p)
   /* Invalidate the current payload ID
      after one second */
   if (Simulator::Now ().GetSeconds () - m_timeStamp
-    > 1.0)
-  {
+    > 1.0) {
     NS_LOG_DEBUG ("CacheCast server table 
         invalidated");
     m_invalid = true;
@@ -542,14 +541,11 @@ CacheCastServerUnit::HandlePacket (Ptr<Packet> p)
   }
 
   if (m_payloadId == tag.GetPayloadId ()
-      && !m_invalid)
-  {
+      && !m_invalid) {
     // remove payload
     p->RemoveAtEnd (tag.GetPayloadSize ());
     cch.SetPayloadSize (0);
-  }
-  else
-  {
+  } else {
     // new payload ID
     m_payloadId = tag.GetPayloadId ();
     m_invalid = false;
@@ -562,7 +558,7 @@ CacheCastServerUnit::HandlePacket (Ptr<Packet> p)
 --------------------------------------------------
 \end{lstlisting}
 
-In the code we first check if the payload 
+In the code of CacheCastServerUnit::HandlePacket() we first check if the payload 
 has been in the table for more than 1 second, and if it has we invalidate this payload ID from the 
 table. The reason for doing this is to support wrapping of payload IDs. The 
 design of CacheCast specifies that a specific payload ID should be invalidated 
@@ -577,7 +573,7 @@ packet onto the channel. The transmission time on the channel is calculated
 based on the size of the modified packet.
 
 The design of CacheCast demands that the packets forming a packet train is put 
-in tight sequential order on the link. In order to obtain a continuous packet 
+in a tight sequential order on the link. In order to obtain a continuous packet 
 train all packets with the same payload should be transmitted in one batch onto 
 the link. In the implementation of CacheCast in Linux this is handled by a 
 separate packet queue in the CacheCast kernel module to overcome the issue of 
@@ -598,6 +594,15 @@ the packets.
 
 
 \subsection{Network support}
+In the previous section we described the server support implementation of 
+CacheCast in ns-3. In this section we take a look at how the network support 
+(CMU and CSU) is implemented. Due to time issues and test problems there are two 
+implementations of the network support presented in this section.
+
+\subsection{Network implementation (Lancaster version)}
+
+
+\subsection{Network implementation (Oslo version)}
 
 
 
@@ -605,9 +610,10 @@ the packets.
 We have in the previous sections looked into both the general design of 
 CacheCast and how the system is implemented in the ns-3 network simulator. In 
 this section will will evaluate our implementation to make sure that it is 
-functioning correctly. First we test the server part implementation and then we evaluate the 
+functioning correctly. First we test the server part and the network part of the 
+implementation. Then we construct integration tests to evaluate the 
 network implementation together with the server support to make sure that the 
-two parts of the CacheCast implementation integrates well with each other.
+two parts of the CacheCast module integrates well with each other.
 
 Before we start with our test cases we introduce a useful feature when doing 
 evaluations. In ns-3 there is a concept called trace sources. A trace source is 
@@ -626,8 +632,14 @@ after the CSU, respectively.
 \subsection{Network support evaluation}
 
 
+\subsection{CacheCast module evaluation\label{eval_mod}}
+
+
 \section{Conclusion\label{s6}}
 The conclusion goes here.
+
+what is made:
+    demos in example dir
 
 \subsection{Future work}
 DCCP
