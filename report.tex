@@ -87,6 +87,11 @@ focuses on more accurate modeling of the functionality of a modern network. The
 goal of this work is to implement the CacheCast system in the ns-3 network 
 simulator.
 
+The implementation will consist of a ns-3 module which contains the data 
+structures and the algorithms for the CacheCast packet handling. The module will 
+also contain example scripts and demos to make it easy the see how the module is 
+used in ns-3 network simulations.
+
 This document is structured in the following way. In section \ref{s1} we give a brief 
 description of the CacheCast system and we follow up which an introduction to 
 the ns-3 network simulator in section \ref{s2}. Then we present the API of the 
@@ -671,10 +676,10 @@ CacheCast in ns-3. In this section we take a look at how the network support
 (CMU and CSU) is implemented. Due to time issues and test problems there are two 
 implementations of the network support presented in this section.
 
-\subsection{Network implementation (Lancaster version)}
+\subsubsection{Network implementation (Lancaster version)}
 
 
-\subsection{Network implementation (Oslo version)}
+\subsubsection{Network implementation (Oslo version)}
 
 
 
@@ -714,12 +719,31 @@ what is made:
     demos in example dir
 
 \subsection{Future work}
-DCCP
+The current implementation of CacheCast in ns-3 contains the features explained 
+throughout this paper. This last section explains some of the work that might be 
+done to the CacheCast module in the future.
 
-csma-netdevice?
+1) The implementation of CacheCast in Linux supports both the UDP and DCCP 
+transport protocols. In ns-3 there is currently no implementation of the DCCP 
+protocol. If DCCP support is added to ns-3 in the future, the CacheCast 
+module could be adapted to support this transport protocol.
 
-error on first packet lost if same PID
+2) Our implementation uses the PointToPointNetDevice as a basis for the 
+CacheCastNetDevice. The PointToPointNetDevice does not model an ethernet link, 
+just a general point-to-point link. To further enhance the realism in the 
+CacheCast module, the CacheCastNetDevice should support ethernet links. 
+In version 3.13 of ns-3 (which we rely on) does not have support for switched 
+ethernet, but this support is currently being implemented in ns-3. Hence, support for 
+ethernet links may be easily added to the CacheCast modules in the future.
 
+3) Lastly, there is one issue which is not handle by current implementations of 
+CacheCast. This issue arises most probably only with cache sizes with room for 
+only one packet. First a CacheCast packet is sent and cached on the CSU. Then no 
+packets are sent for 1 second. Then a new packet train is sent with the same 
+payload ID and index as the previous packet. Then the first packet in the packet train is 
+lost on the link. Then when the rest of the packets are processed by the CSU, 
+the wrong payload is added to the packets. This issue might be easily solved by 
+storing a time stamp together with the payload ID in the CSU.
 
 
 % \appendices
@@ -741,17 +765,47 @@ Srebrny for useful guidelines and input in time of need.
 
 \section*{Contributions}
 
-\begin{tabular}{|l||p{3.4cm}|}
+\begin{tabular}{|l||p{5.3cm}|}
 \hline
-Bekzahan~Kassymbekov & ...\\
+Bekzahan & \textbf{Report:}\\
+Kassymbekov & \textbf{Report:}\\
 \hline
-Dag~Henning~Liodden~Sørbø & Report:\\
-& CacheCast design\\
-& bla\\
+Dag~Henning & \textbf{Report:}\\
+Liodden~Sørbø & The CacheCast system\\
+& \emph{Implementation details:}\\
+& -~General overview\\
+& -~Common data structures and classes\\
+& ~~\emph{Server support:}\\
+& ~~-~Underlying packet handling mechanism\\
+& ~~\emph{Network support (Oslo version):}\\
+& ~~-~CMU\\
+& -~CacheCast module evaluation\\
+& -~Future work\\
+& \textbf{Implementation:}\\
+& -~CacheCastHeader\\
+& -~CacheCastNetDevice\\
+& -~CacheCastTag\\
+& -~CacheManagementUnit (Oslo version)\\
+& -~CacheCastServerUnit\\
+& -~CacheCast helpers\\
+& -~CacheCast examples\\
 \hline
-Kanat~Sarsekeyev & ...\\
+Kanat & ...\\
+Sarsekeyev & ...\\
 \hline
-Rizwan~Ali~Ahmed & ...\\
+Rizwan & \textbf{Report:}\\
+Ali~Ahmed & The ns-3 network simulator\\
+& -~Application programming interface (API)\\
+& \emph{Implementation details:}\\
+& ~~\emph{Server support:}\\
+& ~~-~Details of the API implementation\\
+& ~~\emph{Network support (Oslo version):}\\
+& ~~-~CSU\\
+& -~Server support evaluation\\
+& \textbf{Implementation:}\\
+& -~CacheCast container\\
+& -~Msend() function\\
+& -~CacheStoreUnit (Oslo version)\\
 \hline
 \end{tabular}
 
