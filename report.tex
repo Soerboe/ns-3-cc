@@ -183,14 +183,17 @@ normal IP packets.
 
 
 \section{The ns-3 network simulator\label{s2}}
-The ns-3 simulator\cite{ns-3} is a discrete-event network simulator. It is an 
-open-source project written in C++ and is intended for educational and 
-scientific use. Main purpose for usage of this tool is to simulate different 
-scenarios that accure in network. These scenarios and designs of network are 
-implemented by user. ns-2 is a version prior to ns-3, which is a new simulator 
-that does not support the ns-2 APIs. Some models from ns-2 have already been ported 
-from ns-2 to ns-3, and some has not yet been implemented in ns-3. Version of ns-3 
-we have used is ns-3.13. 
+The ns-3 simulator\cite{ns-3} is a discrete-event network simulator, in which the simulation core and models are implemented in C++. ns-3 is
+built as a library which may be statically or dynamically linked to a C++ main program that defines the simulation
+topology and starts the simulator. ns-3 also exports nearly all of its API to Python, allowing Python programs to import
+an ¿ns3¿ module in much the same way as the ns-3 library is linked by executables in C++.
+
+It is an open-source project, intended for educational and 
+scientific use. Main purpose for usage of this tool is to simulate  different routing protocols, scenarios that accure in different
+network. These scenarios and designs of network are implemented by user. ns-2 is a version prior to ns-3, which is a new simulator 
+that does not support the ns-2 APIs. ns-3 supports popular network protocols used nowadays. Some models from ns-2 have already been ported 
+from ns-2 to ns-3, and some has not yet been implemented in ns-3. 
+Version of ns-3 we are using during  our implementation and simulation is ns-3.13. 
 
 \subsection*{Abstractions}
 Implementation in ns-3 is based on abstraction, so it can be simplified. 
@@ -275,15 +278,19 @@ to merge two or more socket containers might also become handy. It is described 
 %Todo moooore
 \subsection{Usage of CacheCast API}
 
-In CacheCache, applications stands for creating and binding sockets. CacheCast API
+In CacheCache, applications stands for creating and binding sockets and CacheCast API
 is responsible for maintaining these sockets. When a socket is binded, it is added in the socket 
 container simply by using function AddSocket. 
 
 Packet is sent to all socket in the socket container by using function Msend.  
 There is no possibility for applications to have a complete overview of which one of socket did 
-failed by using Msend function only. As a workaround for this problem, we have implemented this function 
+failed until the Msend function is completed. We have implemented this function 
 to return a bool depending on if packet was delivered succesful to all sockets in the container.
-
+If a socket fails, Msend places that socket in a vector for failed sockets and returns false.
+The application would then know there is a socket that failed during sending
+procedure. An iterator is provided to the application, so it can iterate through the vector 
+containing failed sockets. And it is entirely up to the application how failed socket should be treated.
+Implementation of Msend is listed later in this document. 
 
 \begin{footnotesize}
 \begin{lstlisting}[language=C, caption = Example of usage of CacheCast API]
@@ -325,10 +332,12 @@ Helpers are used to setup the Server Unit / CMU and CSU on nodes before channel 
 are defined. In both helpers, Install function takes pointer for two nodes as arguments. The only 
 difference between these two helpers is that CacheCastServerHelper is intended to be used to define 
 characteristics of connections between Serverunit and CSU and CacheCastHelper is used to define 
-CMU and CSU. First, CacheCastNetDevices are created for each of these nodes.
+CMU and CSU. While defining the server node , CacheCastPid is aggregated
+ to the object, so it has abillity to wrap around payload id.  
+
+First, CacheCastNetDevices are created for each of these nodes.
 
 %Todo Mer info
-
 
 Server unit, CMU or CSU are then added to these devices based on type of node that are being 
 installed. These devices are then attached to CacheCastChannel before they are added into a 
