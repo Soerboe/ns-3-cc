@@ -14,6 +14,7 @@ struct bucket
 	uint32_t payloadSize;
 	uint32_t payloadID;
 	uint32_t index;
+	bool valid;
 	
 	bucket *next;
 };
@@ -38,8 +39,6 @@ public:
     bucket *table;
     CacheCastTag *tag_obj;
     void configureTable();
-    void hashPayload(uint32_t);
-    uint32_t searchPayloadID( uint32_t );
     
   /** 
    * Documented in CacheCastUnit 

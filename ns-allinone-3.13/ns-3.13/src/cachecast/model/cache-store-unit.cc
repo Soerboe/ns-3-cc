@@ -5,7 +5,8 @@
 #include "ns3/uinteger.h"
 #include "cache-store-unit.h"
 #include "cachecast-header.h"
-
+#include <ns3/ipv4-header.h>
+#define TABLE_SIZE 100
 
 using namespace std;
 
@@ -18,23 +19,18 @@ NS_OBJECT_ENSURE_REGISTERED (CacheStoreUnit);
 CacheStoreUnit::CacheStoreUnit ()
 {
   NS_LOG_FUNCTION_NOARGS ();
-  SetSize (100);
+  SetSize (TABLE_SIZE);
 }
-
-/* ---------------------------------------------------------- */
 
 void CacheStoreUnit::configureTable()
 {
 	table = new bucket[m_size];
 	for( uint32_t i =0; i < m_size; i++ )
 	{
-        table[i].payloadID = 10000;
+        table[i].valid = false;
         table[i].next = NULL;
     }
 }
-
-/* ---------------------------------------------------------- */
-
 
 void
 CacheStoreUnit::SetSize (uint32_t size)
@@ -56,30 +52,20 @@ CacheStoreUnit::HandlePacket (Ptr<Packet> p)
   CacheCastHeader ccHrd;
   p->RemoveHeader (ccHrd);
   
-  uint32_t location = searchPayloadID( ccHrd.GetPayloadId() );
-  if ( location != 500 )
+  uint32_t location = ccHrd.GetIndex();
+  location = 0;
+  if ( table[ location ].valid )
   {
-    std::cerr << "FOUND\n";
-    ccHrd.SetIndex( table[ location ].index );
     p->AddPaddingAtEnd( table[ location ].payloadSize );
-    
   }
-  else
+  else if( table[ location ].valid == false )
   {
-    std::cerr << "NOOOOT FOUND\n";
-
-    uint32_t hashValue = ccHrd.GetPayloadId() % 7;
-    table[ hashValue ].index = hashValue;
-    table[ hashValue ].payloadID = ccHrd.GetPayloadId();
-    table[ hashValue ].payloadSize = ccHrd.GetPayloadSize();
-    ccHrd.SetIndex( table[ hashValue ].index );
-//     setPayloadInSlots( table[ hashValue ].payloadSize , table[ hashValue ].index); // sets the payload in the slots.
+    table[ location ].payloadSize = ccHrd.GetPayloadSize();
+    table[location].valid = true;
+    setPayloadInSlots( ccHrd.GetPayloadSize(), location );
   }
-
-//   p->AddHeader (ccHrd);
   return true;
 }
-
 
 void CacheStoreUnit::setPayloadInSlots( uint32_t s, uint32_t index )
 {
@@ -96,20 +82,6 @@ void CacheStoreUnit::setPayloadInSlots( uint32_t s, uint32_t index )
           temp = temp->next;
       temp->next = hold;
   }
-}
-
-        
-
-uint32_t CacheStoreUnit::searchPayloadID( uint32_t ID )
-{
-  NS_LOG_FUNCTION (ID);
-
-  for( uint32_t i =0; i < m_size; i++ )
-  {
-    if(table[i].payloadID == ID)
-      return i;
-  }
-  return 500;
 }
 
 TypeId

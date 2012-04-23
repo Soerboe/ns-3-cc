@@ -6,6 +6,7 @@
 #include "ns3/packet.h"
 #include "cachecast-unit.h"
 #include "cachecast-tag.h"
+#include "cachecast-net-device.h"
 
 namespace ns3 {
 
@@ -16,9 +17,9 @@ namespace ns3 {
  
  struct bucket
 {
-	uint32_t payloadSize;
 	uint32_t payloadID;
-	uint32_t index;
+	uint32_t ipAddr;
+	bool valid;
 };
 
 class CacheManagementUnit : public CacheCastUnit
@@ -28,7 +29,8 @@ public:
     bucket *table;
     CacheCastTag *tag_obj;	
 	void configureTable();
-	uint32_t searchPayloadID( uint32_t );
+	uint32_t searchPayloadID( uint32_t, uint32_t);
+	uint32_t GenHashKey(uint32_t, uint32_t);
 	
 	
 	
@@ -40,7 +42,7 @@ public:
   /** 
    * Documented in CacheCastUnit 
    */
-  virtual bool HandlePacket (Ptr<Packet> p);
+  virtual bool HandlePacket (Ptr<Packet> p );
 
   /**
    * Set the size of the CMU's table
