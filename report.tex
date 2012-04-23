@@ -62,9 +62,9 @@
 
 \begin{abstract}
 This paper will introduce and explain the implementation of the CacheCast system in the ns-3 
-network simulator. Several aspects of the implementation and views on it will be 
-presented. We will let the user know how it should be used in simulations and 
-for the developer we present the details of the implementation. Tests and 
+network simulator. For script authors we present the supported API and explain 
+how the module should be used in ns-3 simulations. For the developer we present 
+the details of the implementation of the different parts of the module. Tests and 
 evaluations has been performed to prove that the implementation follows the 
 design of the CacheCast mechanism. The outcome of this work is an 
 independent ns-3 module called \emph{cachecast} which contains all functionality 
@@ -95,9 +95,10 @@ used in ns-3 network simulations.
 This document is structured in the following way. In section \ref{s1} we give a brief 
 description of the CacheCast system and we follow up which an introduction to 
 the ns-3 network simulator in section \ref{s2}. Then we present the API of the 
-implementation in section \ref{api}. In section \ref{s4} we dive into the 
-details of the implementation and perform an implementation evaluation in 
-section \ref{s5}. We give our conclusions in section \ref{s6}. We start now by 
+implementation in section \ref{api}. In section \ref{s4} we explain some general 
+implementation datails, while in section \ref{s41}, \ref{s42} and \ref{s43} we dive into the 
+specific details of the implementation. We perform an implementation evaluation in 
+section \ref{s5}. In section \ref{s6} we conclude the paper. We start now by 
 getting to know the CacheCast system design.
 
 
@@ -188,13 +189,13 @@ normal IP packets.
 
 
 \section{The ns-3 network simulator\label{s2}}
-The ns-3 simulator\cite{ns-3} is a discrete-event network simulator, in which the simulation core and models are implemented in C++. ns-3 is
+The ns-3 network simulator\cite{ns-3} is a discrete-event network simulator, in which the simulation core and models are implemented in C++. ns-3 is
 built as a library which may be statically or dynamically linked to a C++ main program that defines the simulation
 topology and starts the simulator. ns-3 also exports nearly all of its API to Python, allowing Python programs to import
-an ¿ns3¿ module in much the same way as the ns-3 library is linked by executables in C++.
+an ns-3 module in much the same way as the ns-3 library is linked by executables in C++.
 
-It is an open-source project, intended for educational and 
-scientific use. Main purpose for usage of this tool is to simulate  different routing protocols, scenarios that accure in different
+ns-3 is an open-source project, intended for educational and 
+scientific use. Main purpose for usage of this tool is to simulate  different routing protocols, scenarios that occur in different
 network. These scenarios and designs of network are implemented by user. ns-2 is a version prior to ns-3, which is a new simulator 
 that does not support the ns-2 APIs. ns-3 supports popular network protocols used nowadays. Some models from ns-2 have already been ported 
 from ns-2 to ns-3, and some has not yet been implemented in ns-3. 
@@ -234,28 +235,30 @@ arranged. NetDevices needs to be attached on Nodes, Node protocol-stack needs to
 communication channels need to be defined between NetDevices and so on. Topology helpers are used 
 to arrange these attachments as easy as possible on a large scale.
 
+
+
 \section{Application programming interface (API)\label{api}} % HOW TO USE IT
 We have now talked about the general design of CacheCast and about the details 
 of the ns-3 network simulator. In this section we will explain how the CacheCast 
-system is used by script authors. bla bla ...
+system is used by script authors to build ns-3 simulations.
 
 
 \subsection{Services provided to applications}
-Since end-to-end cachecast connections are handled by different sockets, the send procedure requires 
-a sequence of send-requests (corresponding to each socket) to transmit packets to all client. A 
-multiple-send-request from application layer requires a container of sockets, so the application can 
-send packets through / to all sockets in the container. 
+The CacheCast system are built to deliver the same content to many receivers. In 
+modern networks end-to-end connections are handled by different sockets, so CacheCast requires 
+a sequence of send-requests (corresponding to each socket) to transmit packets 
+to all clients. A multiple-send-request from application layer requires a container of sockets, so the application can 
+send packets to all sockets in the container. 
 
-Since a such socket container is not supported by transport layer and nor a part of a application-layer, 
+Since such a socket container is not supported by transport layer and is not a part of a application-layer, 
 we chose to implement a CacheCast Application Programming Interface in the class \texttt{CacheCast}. 
-This interface will not only support the socket container, but also systemcall \texttt{Msend()} 
-would be provided to the application. This is much more practical than having a static systemcall 
-called by the application.
+This interface will not only support the socket container, but also the function \texttt{Msend()} 
+would be provided to the application.
 
 The socket container itself is implemented as a vector of sockets (\texttt{m\_sockets}), which contains 
 sockets added by application. In addition to vector \texttt{m\_sockets} we chose to have another 
 vector \texttt{m\_failed} to provide the application the knowledge of sockets that failed during the 
-msend procedure.
+Msend() procedure.
 
 \begin{footnotesize} 
 \begin{lstlisting}[language=C,caption = Services provided to application, 
@@ -276,24 +279,25 @@ bool Msend(Ptr<Packet> packet);
 \end{footnotesize}
 In order to maintain the container of sockets, some facilities are provided to applications. 
 It is necessary for the application to add or remove sockets in the container. And the possibility 
-to merge two or more socket containers might also become handy. It is described in Listing \ref{services}.
+to merge two or more socket containers might also become handy. It is described in listing \ref{services}.
  
 %Todo moooore
 \subsection{Usage of CacheCast API}
 
-In CacheCache, applications stands for creating and binding sockets and CacheCast API
-is responsible for maintaining these sockets. When a socket is binded, it is added in the socket 
-container simply by using function AddSocket. 
+In ns-3, applications creates and binds sockets and CacheCast API
+is responsible for maintaining these sockets. When a socket is bound, it is added in the socket 
+container simply by using function AddSocket(). 
 
-Packet is sent to all socket in the socket container by using function Msend.  
-There is no possibility for applications to have a complete overview of which one of socket did 
-failed until the Msend function is completed. We have implemented this function 
-to return a bool depending on if packet was delivered succesful to all sockets in the container.
-If a socket fails, Msend places that socket in a vector for failed sockets and returns false.
+A packet is sent to all sockets in the socket container by using the function 
+Msend(). There is no possibility for applications to have a complete overview of which one of socket did 
+failed until the Msend() function is completed. We have implemented this function 
+to return a bool depending on if packet was delivered successfully to all sockets in the container.
+If a socket fails, Msend() places that socket in a vector for failed sockets and returns false.
 The application would then know there is a socket that failed during sending
 procedure. An iterator is provided to the application, so it can iterate through the vector 
 containing failed sockets. And it is entirely up to the application how failed socket should be treated.
-Implementation of Msend is listed later in this document. 
+Implementation of Msend() is listed in listing \ref{msend} later in this 
+document.. 
 
 \begin{footnotesize}
 \begin{lstlisting}[language=C, caption = Example of usage of CacheCast API, 
@@ -317,19 +321,16 @@ if(!cc.Msend(packet)){
 \end{footnotesize}
 
 \subsection{Helpers}
-Helpers are used to setup the Server Unit / CMU and CSU on nodes before channel between these units 
-are defined. In both helpers, Install function takes pointer for two nodes as arguments. The only 
-difference between these two helpers is that CacheCastServerHelper is intended to be used to define 
-characteristics of connections between Serverunit and CSU and CacheCastHelper is used to define 
-CMU and CSU. While defining the server node , CacheCastPid is aggregated
- to the object, so it has abillity to wrap around payload id.  
-
-First, CacheCastNetDevices are created for each of these nodes.
-
-%Todo Mer info
-
-Server unit, CMU or CSU are then added to these devices based on type of node that are being 
-installed. These devices are then attached to CacheCastChannel before they are added into a 
+The CacheCast helper classes are used to setup the Server Unit, CMU and CSU on 
+nodes and a channel between the nodes. In both helpers, the Install() function 
+takes pointer for two nodes as arguments. Two helpers are implemented namely 
+CacheCastServerHelper ad CacheCastHelper. The only difference between these two 
+helpers is that CacheCastServerHelper installs server support in the first node 
+argument. CacheCastHelper installs a CMU on the first node and a CSU on the 
+second node. While defining the server node, a CacheCastPid object is aggregated to the 
+object, so it has ability to synchronize payloads between many instances of the 
+CacheCast container on the server. CacheCastNetDevices are created for each of these nodes.
+These devices are then attached to a CacheCastChannel before they are added into a 
 container of NetDevices.    
 
 
@@ -340,7 +341,7 @@ implementation details and look at the implementation from a developer
 perspective. In this section we explain how the CacheCast packets traverse the nodes and 
 the channels in order to get a general overview of how the implementation works, 
 and we look at common data structures used throughout the implementation. In the 
-next two section we elaborate on the specific implementation details for the 
+next two sections we elaborate on the specific implementation details for the 
 server support and the network support.
 
 \subsection{General overview}
@@ -490,7 +491,7 @@ implementation. Let us in the following sections go more into detail of the
 actual packet handling mechanisms of the CacheCast system.
 
 
-\section{Server support implementation}
+\section{Server support implementation\label{s41}}
 The CacheCast system relies on support from the server in order to remove 
 redundant payload in the network. This server support should send all packets 
 sequentially onto the link and truncate all packets beside the first one.
@@ -507,23 +508,23 @@ section \ref{serverunit}.
 
 %Todo mer om API
 
-CacheCast::Msend function takes pointer to a packet as an argument which is generated by the 
-application. This functions returns a boolean value depended on packet delivery to all 
-sockets in socket container are successful or not. 
+CacheCast::Msend() function takes pointer to a packet as an argument which is generated by the 
+application. This functions returns a boolean value depends on if packet delivery to all 
+sockets in socket container were successful or not. 
 
 Before sending packet to socket, payload-id must be generated and added to the packet as a 
-packet-tag, which is done along with the size of the packet. 
+CacheCastTag, which is done along with the size of the packet. 
 CacheCastPid::CalculateNewPayloadId() is called to generate the payload-id. 
-Usually this id is increased if packets are sent continously. If more than 1 second 
-has passed since last packetrain, the payload-id is wrapped around to 0.
+Usually this id is increased if packets are sent continuously. If more than 1 second 
+has passed since the last packet was sent, the payload-id is wrapped around to 0.
 
-Each socket in socket container is tested if it is a cachecast-supporting socket or not, 
+Each socket in socket container is tested if it is a socket that CacheCast supports, 
 since in CacheCast UDP and DCCP are only supported protocols in the transport layer. 
-(DCCP is not implemented in our solution, since it is not yet supported in ns-3.) 
+(DCCP is not implemented in our solution, since it is not yet supported in ns-3.)
 
 \begin{footnotesize}
 % -------------- WIDTH ----------------------------]
-\begin{lstlisting}[language=C,caption = Function Msend(), frame=tb]
+\begin{lstlisting}[language=C,caption = Function Msend(),showstringspaces=false, frame=tb, label=msend]
 bool CacheCast::Msend (Ptr<Packet> packet) {
   bool successful = true;
   std::vector<Ptr <Socket> >::iterator socket;
@@ -650,71 +651,67 @@ CacheCast in ns-3. In the next section we take a look at how the network support
 implementations of the network support presented in this section.
 
 
-\section{Network implementation (Lancaster version)}
+\section{Network implementation (Lancaster version)\label{s42}}
 
-\subsection{Cache management Unit (CMU) Design}
+\subsection{Cache management Unit (CMU) design}
 The Cache Management Unit is the part of the CacheCast system which is 
-installed at the entry of the link, The design consists of various components 
+installed at the entry of the link. The design consists of various components 
 which are as follows; Cache Management Unit table, CMU table Configuration, CMU 
 Hash key Generator Function, Cache Hit Event, Cache Miss Event and Searching component.
 
-These components are described in this cocument the way they have been designed 
-and why they are use. The way the CMU works is explained in section \ref{cmu}.
+These components are described in this document the way they have been designed 
+and why they are used. The way the CMU works is explained in section \ref{cmu}.
 
 \subsubsection{Cache Management Unit table}
-The Cache Management Unit Table is storage where the payload ids and the IPs 
+The Cache Management Unit table is storage where the payload ids and the IPs 
 associated with the cacheable packets are stored. These entries are used for 
 determining that the packet entered in the CMU is to be handled as a Cache Miss 
-event or as the Cache Hit event. And accordingly the packet is handled, if the 
+event or as the Cache Hit event and the packet is handled accordingly. If the 
 Cache Miss event occurs then the CMU table is updated and a new entry for this 
 new packet is determined by the CMU Hash key Generator Function Component, and 
 finally the associated payload id and IP of its source are stored in the CMU 
 table.
 
 \subsubsection{CMU Table Configuration}
-The CMU table is configured only once when the CMU is installed, The size of CMU 
-table is defined and it is maintained throughout the life of CMU.
+The CMU table is configured only once when the CMU is installed. The size of CMU 
+table is defined and it is maintained throughout the life of the CMU.
 
 \subsubsection{CMU Hash key Generator Function}
 The CMU Hash key Generator Function is used to get an appropriate index where 
-the payload id plus the source IP of the associated packet is to be stored, it 
-uses both the payload id and source IP as keys to be hashed. The packet's payload 
-id always come in a sequential manner. When the table gets fully loaded it 
+the payload id plus the source IP of the associated packet is to be stored. It 
+uses both the payload id and source IP as keys to be hashed. When the table gets fully loaded it 
 starts expiring the oldest entries that were stored before and replaces them 
 with the new entries, with this component the invalidation of the table entries 
-is done automatically this component is designed this way that it handles 
+is done automatically. This component is designed in a way such that it handles 
 invalidation automatically.
 
 \subsubsection{CMU Cache Hit Event}
 The Cache Hit event occurs when the cacheable packet arrives at CMU and the 
-associated payload id of this packet is already present in the CMU table, the 
-header of this packet is the only thing that arrives at the CMU. If we go into 
-the semantics of the whole implementation only the packet header arrives and 
-from source that CMU analyses through its searching component that this packet 
-was already stored in the CMU table or not. The occurrence of CMU hit event is 
-verified by the CMU searching component so this means this is used by the 
-searching component of CMU, having this event occurred the CMU places the 
-appropriate index where it is stored in CMU table in the content header and this 
-is then placed on the link to travel to the CSU where its payload id attached 
-and given to the router for further processing.
+associated payload id of this packet is already present in the CMU table. If we go 
+into the semantics of the whole implementation, from source and payload id CMU 
+analyses through its searching component that this packet was already stored in 
+the CMU table or not. The occurrence of CMU hit event is verified by the CMU 
+searching component so this means this is used by the searching component of 
+CMU. Having this event occurred, the CMU places the appropriate index where it 
+is stored in CMU table in the content header and this is then placed on the link 
+to travel to the CSU.
 
 \subsubsection{Cache Miss Event}
 The Cache Miss Event occurs when the cacheable packet that arrives at CMU and 
-the associated payload id of this packet is not previously stored in CMU Table, 
-unlike Cache Hit event this cacheable packet comes completely with its payload 
-plus header on CMU, and CMU after analyzing that this was a cache miss CMU first 
+the associated payload id of this packet is not previously stored in CMU Table. 
+The CMU, after analyzing that this was a cache miss, first 
 uses Hash key generator Component to generate an appropriate index where it 
-places the associated payload id and Source IP in its table. And then the CMU 
-does not cut off the payload part of the Packet and places the index generated 
+places the associated payload id and source IP in its table. And then the CMU 
+does not cut off the payload part of the packet and places the index generated 
 in its content header and sends the packet without cutting the payload part to 
 the CSU which then places the payload of this packet first in its table and then 
 sends this packet to the router for further processing. 
 
 \subsubsection{CMU Searching component}
-The CMU Searching component is the sore component of the whole CMU which uses 
+The CMU Searching component is the core component of the whole CMU which uses 
 the cacheable packet's payload id and source IP to search through the table and 
-this component verifies that whether a Cache Hit event occurred or a Cache Miss 
-event occurred, these are the only core events that convey CMU the current state 
+this component verifies whether a Cache Hit event occurred or a Cache Miss 
+event occurred. These are the only core events that convey CMU the current state 
 and on the information they provide to CMU, it handles the packet accordingly as 
 explained before.
 
@@ -728,11 +725,11 @@ why they are used. The way the CSU works is described in section \ref{csu}.
 
 \subsubsection{Cache Store Unit Table}
 The Cache Store Unit table is storage where the payloads associated with the 
-cacheable packets are stored; the entries where the payloads are stored are 
+cacheable packets are stored. The entries where the payloads are stored are 
 selected from the values which were placed previously by CMU in the content 
 header's index field, the payloads are stored there and used accordingly when 
 there is a cache miss this means that the packets payload has arrived at CSU as 
-well and it has to be stored in the appropriate index and if there is a cache 
+well and it has to be stored in the appropriate index. If there is a cache 
 hit at CMU then the payload already placed at the index pointed by the INDEX 
 field of the content header has to be attached to the packet to send it to the 
 router for further processing.
@@ -741,18 +738,18 @@ router for further processing.
 \subsubsection{CSU table Configuration}
 The CSU table is configured only once when the CSU is installed, The size of CSU 
 table is defined and it is maintained throughout the life of CSU. And its size 
-is equal to the size of the CMU Table.
+is equal to the size of the CMU table.
 
 \subsubsection{CSU Payload Placement Component}
 The CSU Payload Placement Component is the core part of the CSU which analyzes 
 the packets that arrive at the CSU and based on its determination CSU further 
 decides that what to do with this packet weather to just copy the payload from 
 the table entry and place it with the packet or copy the payload from the 
-original packet and place it inside the table all these are handled by this 
+original packet and place it inside the table. All this are handled by this
 component of the CSU.
 
-Next we would like to explain the implementation of these modules by naming the 
-functions that we have in the actual modules and what they do.
+Next we would like to explain the implementation of these components by naming the 
+functions that we have in the actual components and what they do.
 
 \subsection{Cache Management unit element}
 The CMU element works on the base of the CMU table.
@@ -791,12 +788,11 @@ searching function to know that whether its Cache hit or Cache Miss.
 Cache Hit: If this event appears then this means that the payload is already present at the CSU, it simply places the Index in the ccHrd field.
 
 Cache Miss: If this event occurs this means that this packet is a new one and 
-all its content payload id payload itself has to be stored in the appropriate 
-tables. Then simply the packet header is added and this way the whole packet is 
-handled.
+payload id has to be stored in the appropriate tables. Then 
+simply the CacheCastHeader is added and this way the whole packet is handled.
 
 \subsubsection{void Setsize (uint32\_t size)}
-This function is called the constructor when it has to set the table size.
+This function is called the configureTable() when it has to set the table size.
 
 
 \subsection{Cache Store Unit Element}
@@ -812,11 +808,11 @@ struct bucket {
 };
 \end{lstlisting}
 
-The member variables used in this structure can be seen as above there are few 
+The member variables used in this structure can be seen as above. There are a few 
 other member variables of these modules which are as follows; uint32\_t m\_size, 
 bucket *table and CacheCastTag *tag\_obj.
 
-The core function of this element is bool handlePacket (Ptr <Packet> p).
+The core function of this element is bool HandlePacket (Ptr <Packet> p).
 This works as follows; This first removes the content header from the packet it 
 receives, then extracts the index placed in it.
 
@@ -830,7 +826,7 @@ stores the payload ids and the IPs of the corresponding cacheable packets,
 further transmits only the content header if there is a Cache Hit event that 
 took place.
 
-The CMU and the CSU modules that have been implemented, provide the complete 
+The CMU and the CSU components that have been implemented, provide the complete 
 functionality of the CacheCast network support. The CMU and CSU both are able to 
 handle invalidation of the cache automatically. For inconsistency there is no 
 retransmission mechanism, the tables are used as storage places in both of these 
@@ -840,7 +836,7 @@ store a particular payload size whose value is greater than the slot size they
 are stored in multiple slots using chaining mechanism.
 
 
-\section{Network implementation (Oslo version)}
+\section{Network implementation (Oslo version)\label{s43}}
 
 
 
@@ -867,28 +863,27 @@ after the CSU, respectively.
 \subsection{Server support evaluation}
 The CacheCast design requires server support to handle client batching and
 to send packets onto the link in a tight sequential order in a structure of
-a packet train. This is tested by setting up a topology with nodes.
+a packet train. This is tested by setting up a topology with two nodes. The node 
+n0 and n2 in figure \ref{fig_topology} is used for this evaluation.
 In this topology, dataRate value for the server node is set to 2Mbps and 
-delay is set to be 2ms in the channel between server node (n0) and cachecast node (n2).
+delay is set to be 2ms in the channel between server node (n0) and node (n2).
 Payload size of packet set to 1000, in addition to header size which is set to 40.
 
-By simulating our simulation we see following result at receiver unit of cachecast node. 
+By simulating our simulation we see following result at receiver unit of node. 
 
-\begin{footnotesize}
 % -------------- WIDTH ----------------------------]
-\begin{lstlisting}[language=C,caption = Function Msend() frame=tb]
+\begin{lstlisting}[language=C,caption=Packets received on node, frame=tb, basicstyle=\ttfamily\footnotesize]
 Time    Size
------------- 
 2.00616 1040
 2.00632 40
 2.00648 40
 2.00664 40
 \end{lstlisting}
-\end{footnotesize}
 
 As we can see, the first packet arrives with expected delay and is complete.   
 And following packets are arriving as a packet train with with a short timeline and are in 
-size of the header size. 
+size of the header size. Thus, we see that the server puts the CacheCast packets 
+onto the link according to the CacheCast design. It follows the packet train structure.
 
 
 \subsection{Network support evaluation}
@@ -902,10 +897,10 @@ parts.
 \subsubsection{Computational Complexity}
 The computational complexity everywhere in both the CMU and CSU is of O(1). Only 
 there is searching function in the CMU whose computational complexity is of 
-order n O(n). 
+order O(n). 
 
 \subsubsection{Description of test case}
-We have a test case name as cashecast-example3. This example has two servers 
+We have a test case name as cachecast-example3. This example has two servers 
 which access the same router and both apply the same payload ids to their 
 associated cacheable packets and they both are stored in two different locations 
 (indexes) at CMU and CSU and this solves our problem of having multiple servers 
@@ -919,8 +914,8 @@ example as well.
 
 \subsection{CacheCast module evaluation\label{eval_mod}}
 In the previous two sections we evaluated the server support and the network 
-support and proved that they work as intended. In this section we evaluate the 
-integration of these two parts into the ns-3 module \texttt{cachecast}. The Oslo 
+support. In this section we evaluate the 
+integration of these two parts into the CacheCast ns-3 module. The Oslo 
 version of the network support is used in this evaluation.
 
 We have built a testbed in which we do our tests. The topology of this simulated 
@@ -928,7 +923,7 @@ network can be seen in figure \ref{fig_topology}. All the nodes in the topology
 supports CacheCast. The nodes n0 and n1 have server support installed. The 
 channels have a CMU installed on the link entry and a CSU installed at the link 
 exit, as explained in the CacheCast design. The nodes n5 and n6 have clients 
-installed. All other nodes serves as routers.
+installed. All other nodes serve as routers.
 
 \begin{figure}[!t]
 \centering
@@ -939,15 +934,15 @@ installed. All other nodes serves as routers.
 
 In the server evaluation we have seen that the node adjacent to the server 
 receives the CacheCast packets in the correct format. Now we need to test that 
-the CMU and the CSU handles the packets correctly. Our most simple approach to 
+the CMU and the CSU handles the packets from the server correctly. Our most simple approach to 
 this is to only enable server0 and client0. Then we only have a single list of 
 nodes in which the start node is the server and the end node is the client. To 
 prove that the CacheCast packet handling is correct in this simple scenario we 
 connect, for each node, to the four trace sources explained above, and prints 
 the time and the packet size. An example of this output for node 3 is 
 presented in listing \ref{list_test1}. Each line in the following listings 
-correspond to one packet being processed. We add 3 clients to the client0 node and use a packet with a 
-size of 1000 bytes. The UDP header is 8 bytes, the IP header is 20 bytes, the 
+correspond to one packet being processed. Three packets are sent to client0 and 
+we use a packet of 1000 bytes. The UDP header is 8 bytes, the IP header is 20 bytes, the 
 CacheCast header is 10 bytes and the point-to-point header is 2 bytes, which 
 adds up to 40 bytes of total header size.
 
@@ -1049,7 +1044,7 @@ This is because more than one second has passed since the payload ID was cached.
 
 In all the preceding tests the table/cache size and slot size have been large 
 enough to hold all the packets. Now we change the size of the table and cache to 
-10 with a slot size of 100 bytes, and resets previously changes the transmission 
+10 with a slot size of 100 bytes, and resets the previous changes to the transmission 
 rate. Introducing these changes tests two things; the handling of multiple slots per payload and the 
 cache replacement mechanism. For the issue of multiple slots we compare the 
 indices in which the payload should be stored, with the actual payload sizes of 
@@ -1061,8 +1056,8 @@ current size has only room for one packet (by using the aforementioned packet
 sizes). So each time a packet with a different global id than the previous one 
 enters the CMU it has to be cached.
 
-We finish this evaluation with a test concerning packet loss. Packet loss in a router does 
-not affect CacheCast since CacheCast packets are handled like normal IP packets 
+We finish this evaluation with a test concerning packet loss. Packet loss within 
+a router does not affect CacheCast since CacheCast packets are handled like normal IP packets 
 within routers. Thus we do not need to test for this explicitly. The only place 
 where packet loss affects the CacheCast technique on the link. And there we have two types of 
 packets which might get lost; truncated packet and non-truncated packets. We 
@@ -1076,21 +1071,34 @@ non-truncated packet. What we observe now is that when a non-truncated packet is
 lost on the channel, the whole packet train following it is also lost. As 
 discussed by Srebrny\cite{srebrny}, this is a consequence of the CacheCast 
 technique. When the packet carrying payload is lost, an inconsistency between 
-the CMU's table and the CSU's is introduced. Therefore we must discard the other
+the CMU's table and the CSU's cache is introduced. Therefore we must discard the other
 truncated packets with the same global id. Our tests show that our 
 implementation handles, in the correct way, all packet loss which might affect the CacheCast 
 technique.
 
 
-\section{Conclusion\label{s6}}
-The conclusion goes here.
+\section{Conclusion and future work\label{s6}}
+In this paper we have presented the implementation of the CacheCast system in the 
+ns-3 network simulator. Through our work we have studied both the CacheCast 
+system design and the ns-3 framework in order to introduce the CacheCast 
+technique into ns-3. The main result of this work is a ns-3 module called 
+\texttt{cachecast}. The module consists of the components explained 
+throughout this paper. We have constructed several tests and evaluations to 
+check that our implementation works correctly. The network support part have two 
+different versions in this paper and to the respective authors' understanding, 
+this part follows the design of CacheCast and handles the packets in the correct 
+way. The server support has been thoroughly tested both through unit tests and 
+through the integration tests and no severe bugs has been found. The 
+integration tests also showed that the different components of the 
+implementation work together in the way specified in the CacheCast design.
 
-what is made:
-    demos in example dir
+Several example scripts, applications, tests and demos have been made which is found in 
+the examples directory of the module. Some scripts test only certain parts of 
+the implementation. Information regarding this can be found in the source of 
+each script.
 
-\subsection{Future work}
 The current implementation of CacheCast in ns-3 contains the features explained 
-throughout this paper. This last section explains some of the work that might be 
+throughout this paper. At last we explain some of the work that might be 
 done to the CacheCast module in the future.
 
 1) The implementation of CacheCast in Linux supports both the UDP and DCCP 
@@ -1100,18 +1108,18 @@ module could be adapted to support this transport protocol.
 
 2) Our implementation uses the PointToPointNetDevice as a basis for the 
 CacheCastNetDevice. The PointToPointNetDevice does not model an ethernet link, 
-just a general point-to-point link. To further enhance the realism in the 
+just a generic point-to-point link. To further enhance the realism in the 
 CacheCast module, the CacheCastNetDevice should support ethernet links. 
-In version 3.13 of ns-3 (which we rely on) does not have support for switched 
+Version 3.13 of ns-3 (which we rely on) does not have support for switched 
 ethernet, but this support is currently being implemented in ns-3. Hence, support for 
 ethernet links may be easily added to the CacheCast modules in the future.
 
-3) Lastly, there is one issue which is not handle by current implementations of 
-CacheCast. This issue arises most probably only with cache sizes with room for 
-only one packet. First a CacheCast packet is sent and cached on the CSU. Then no 
+3) Lastly, there is one issue which is not handled by current implementations of 
+CacheCast. This issue arises, most probably, when only one packet fits in 
+the cache. First a CacheCast packet is sent and cached on the CSU. Then no 
 packets are sent for 1 second. Then a new packet train is sent with the same 
 payload ID and index as the previous packet. Then the first packet in the packet train is 
-lost on the link. Then when the rest of the packets are processed by the CSU, 
+lost on the link. Thus, when the rest of the packets are processed by the CSU, 
 the wrong payload is added to the packets. This issue might be easily solved by 
 storing a time stamp together with the payload ID in the CSU.
 
@@ -1133,6 +1141,7 @@ Srebrny for useful guidelines and input in time of need.
 \bibliography{library}
 \bibliographystyle{IEEEtran}
 
+\newpage
 \section*{Contributions}
 
 \begin{tabular}{|l||p{5.3cm}|}
@@ -1152,7 +1161,7 @@ Liodden~Sørbø & -~The CacheCast system\\
 & \emph{Network support (Oslo version):}\\
 & -~CMU\\
 & -~CacheCast module evaluation\\
-& -~Future work\\
+& -~Conclusions and future work\\
 & \textbf{Implementation:}\\
 & -~CacheCastHeader\\
 & -~CacheCastNetDevice\\
