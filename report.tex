@@ -188,21 +188,22 @@ normal IP packets.
 
 
 \section{The ns-3 network simulator\label{s2}}
-The ns-3 simulator\cite{ns-3} is a discrete-event network simulator, in which the simulation core and models are implemented in C++. ns-3 is
-built as a library which may be statically or dynamically linked to a C++ main program that defines the simulation
-topology and starts the simulator. ns-3 also exports nearly all of its API to Python, allowing Python programs to import
-an ¿ns3¿ module in much the same way as the ns-3 library is linked by executables in C++.
+The ns-3 simulator\cite{ns-3} is a discrete-event network simulator, in which the simulation core and models are implemented in C++. 
+ns-3 simulator is an open-source project, intended for educational and 
+scientific use. Main purpose for usage of this tool is to simulate  different routing protocols, scenarios that occurs in different
+networks. These scenarios and designs of networks are implemented by user.
+ns-3 isbuilt as a library which may be statically or dynamically linked to a C++ main program that defines the simulation
+topology and starts the simulator. ns-3 also exports its API to Python, allowing Python programs to import
+modules same way as the ns-3 library is linked by executables in C++.
 
-It is an open-source project, intended for educational and 
-scientific use. Main purpose for usage of this tool is to simulate  different routing protocols, scenarios that accure in different
-network. These scenarios and designs of network are implemented by user. ns-2 is a version prior to ns-3, which is a new simulator 
-that does not support the ns-2 APIs. ns-3 supports popular network protocols used nowadays. Some models from ns-2 have already been ported 
-from ns-2 to ns-3, and some has not yet been implemented in ns-3. 
-Version of ns-3 we are using during  our implementation and simulation is ns-3.13. 
+ns-2 is a version prior to ns-3, and uses an API that is not supported by ns-3.
+Some models from ns-2 have already been ported from ns-2 to ns-3, and some has not yet 
+been implemented but it supports nearly all popular network protocols used nowadays. 
+Version of ns-3 we are using during our implementation and simulation is ns-3.13.
 
 \subsection*{Abstractions}
-Implementation in ns-3 is based on abstraction, so it can be simplified. 
-These abstraction have differences from the network as we know in reality. 
+Implementation in ns-3 is based on abstraction, so it can be implemented in a simple way. 
+These abstraction have differences from network as we know in reality. 
 Before we start explaining our implementation of CacheCast in ns-3, it is 
 important to understand abstractions and terms that are used in ns-3.
 
