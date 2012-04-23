@@ -865,6 +865,30 @@ after the CSU, respectively.
 
 
 \subsection{Server support evaluation}
+The CacheCast design requires server support to handle client batching and
+to send packets onto the link in a tight sequential order in a structure of
+a packet train. This is tested by setting up a topology with nodes.
+In this topology, dataRate value for the server node is set to 2Mbps and 
+delay is set to be 2ms in the channel between server node (n0) and cachecast node (n2).
+Payload size of packet set to 1000, in addition to header size which is set to 40.
+
+By simulating our simulation we see following result at receiver unit of cachecast node. 
+
+\begin{footnotesize}
+% -------------- WIDTH ----------------------------]
+\begin{lstlisting}[language=C,caption = Function Msend() frame=tb]
+Time    Size
+------------ 
+2.00616 1040
+2.00632 40
+2.00648 40
+2.00664 40
+\end{lstlisting}
+\end{footnotesize}
+
+As we can see, the first packet arrives with expected delay and is complete.   
+And following packets are arriving as a packet train with with a short timeline and are in 
+size of the header size. 
 
 
 \subsection{Network support evaluation}
