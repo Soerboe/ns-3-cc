@@ -838,6 +838,88 @@ are stored in multiple slots using chaining mechanism.
 
 \section{Network implementation (Oslo version)\label{s43}}
 
+\subsection{CSU}
+
+According to cachecast design, CacheStoreUnit is responsible for caching the payload from the 
+packet that is received. It is attached on the link exit. As mentioned earlier in section \ref{s1} in 
+this document, packets arrives at CSU in a structure of a packet train.
+
+In our implementation CacheCastNetDevice receives the packet in CacheCastNetDevice::Receive 
+function. After determining that it is a CacheCastPacket that has arrived, the packet is handled 
+to Receiver Unit's (abstracted by CSU) packethandler.
+
+It is important to assure that there are enough slots in the cache 
+so the payload of the packet can be stored in a correct manner. Currently we have not implemented a
+solution for scenario where the CacheCast packet is too large for CSU to handle. (Therefore it 
+chooses to reject the packet if that is the case.)
+
+When the packet train arrives at CSU, it knows that only the first header of a packet train 
+is followed by payload data. 
+For every header that is received by the packethandler of CSU, it checks size of payload to 
+determine where the packet is complete or is it just a header. If payload size of the packet is
+0, packethandler knows that only header has arrived and copies payload chunks from the cache 
+store slots to the packet buffer. On arrival of a complete packet, the packethandler knows that
+this packet is not stored in the cache and stores the payload chunks from the incoming packet.
+
+Cache storage is represented as a std::map in our implementation. It used index value from the 
+CacheCastHeader as key value. Mapped value in this map is a struct containing a unique id and 
+size of payload, (which is representing the payload is our simulation). The unique payload id in 
+mapped struct is a combination of the packet IP address and the payload ID, and is used to avoid 
+duplicated payload chunks in cache storage. Implementation of Handlepacket() in CacheStoreUnit
+is show in listning \ref{impl_csu_oslo}
+
+
+\begin{footnotesize}
+% -------------- WIDTH ---------------------------]
+\begin{lstlisting}[language=C,caption = Implementation of Handlepacket() in CacheStoreUnit, label = impl_csu_oslo, frame=tb]
+bool CacheStoreUnit::HandlePacket (Ptr<Packet> p){
+  NS_LOG_FUNCTION (p);
+  NS_ASSERT_MSG (m_size > 0, 
+  "CSU's cache size must be a positive integer");
+  NS_ASSERT_MSG (m_slotSize > 0, 
+  "CSU's slot size must be a positive integer");
+
+  CacheCastHeader cch;
+  p->RemoveHeader(cch);
+  
+  /* Check if there are enough slots */
+  uint32_t slotsCount = (cch.GetPayloadSize () != 0) ?
+    (cch.GetPayloadSize () - 1) / m_slotSize + 1 : 1;
+  NS_ASSERT_MSG (slotsCount <= m_size,
+    "CacheCast packet is too large for the CSU"); 
+  NS_ASSERT_MSG (cch.GetIndex() < m_size,
+    "CacheCast index is too large");
+
+  /* Get IP address of packet */
+  Ipv4Header ipHdr;
+  uint32_t ipRead = p->PeekHeader (ipHdr);
+  NS_ASSERT (ipRead);
+  uint32_t addr = ipHdr.GetSource ().Get ();
+
+  /* Construct universally unique id */
+  uint64_t id = ((uint64_t) addr << 32)
+    | cch.GetPayloadId();
+
+  /* Only header arrived */
+  if(cch.GetPayloadSize() == 0){
+    TableItem &item = m_cache[cch.GetIndex()];
+    if(item.id != id){
+      return false;  
+    }
+    p->AddPaddingAtEnd(item.payloadSize);     
+  }
+  /* Full CacheCast packet arrived */
+  else{
+    m_cache[cch.GetIndex()].id = id; 
+    m_cache[cch.GetIndex()].payloadSize
+     = cch.GetPayloadSize(); 
+  }
+  return true;
+}
+\end{lstlisting}
+\end{footnotesize}
+
+
 
 
 \section{Evaluation\label{s5}}
