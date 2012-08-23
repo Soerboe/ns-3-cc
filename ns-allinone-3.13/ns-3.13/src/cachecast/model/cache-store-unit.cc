@@ -1,6 +1,5 @@
 /* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil; -*- */
 #include "ns3/log.h"
-// #include "ns3/simulator.h"
 #include "ns3/ipv4-header.h"
 #include "ns3/uinteger.h"
 #include "cache-store-unit.h"
